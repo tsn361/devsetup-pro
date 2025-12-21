@@ -36,6 +36,20 @@ class IPCService {
    * Get system information
    */
   static async getSystemInfo() {
+    if (!this.isElectron()) {
+      return {
+        platform: 'browser',
+        arch: 'unknown',
+        nodeVersion: 'N/A',
+        electronVersion: 'N/A',
+        appVersion: '0.1.0',
+        totalMemory: 0,
+        freeMemory: 0,
+        cpus: 0,
+        hostname: 'browser',
+      };
+    }
+    
     try {
       return await ipcRenderer.invoke('get-system-info');
     } catch (error) {
@@ -48,6 +62,15 @@ class IPCService {
    * Run system check
    */
   static async systemCheck() {
+    if (!this.isElectron()) {
+      return {
+        platform: false,
+        apt: false,
+        internet: false,
+        diskSpace: false,
+        sudo: false,
+      };
+    }
     try {
       return await ipcRenderer.invoke('system-check');
     } catch (error) {

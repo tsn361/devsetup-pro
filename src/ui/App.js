@@ -8,7 +8,7 @@ import './styles/App.css';
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true }}>
       <div className="app">
         {/* Navigation */}
         <nav className="navbar">
