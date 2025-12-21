@@ -36,7 +36,7 @@ class IPCService {
    * Get system information
    */
   static async getSystemInfo() {
-    if (!this.isElectron()) {
+    if (!isElectron()) {
       return {
         platform: 'browser',
         arch: 'unknown',
@@ -62,7 +62,7 @@ class IPCService {
    * Run system check
    */
   static async systemCheck() {
-    if (!this.isElectron()) {
+    if (!isElectron()) {
       return {
         platform: false,
         apt: false,
