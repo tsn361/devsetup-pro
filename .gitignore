@@ -1,0 +1,22 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+dist/
+build/
+*.log
+.idea/
+.vscode/
+*.swp
+*.swo
+coverage/
+.cache/
+~/.config/devsetup-pro/
+out/
+
+# Private business/planning documents
+docs/BUSINESS_PLAN.md
+docs/ROADMAP.md
+docs/FEATURES.md
+docs/GETTING_STARTED.md
+docs/INDEX.md

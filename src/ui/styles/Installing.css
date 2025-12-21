@@ -1,0 +1,102 @@
+.installing {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.installing-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.installing-header h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.installing-header p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.installing-content {
+  /* Content styling */
+}
+
+/* Installation Results */
+.installation-results {
+  background: white;
+  border-radius: 8px;
+  padding: 32px;
+  margin-top: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.installation-results h2 {
+  font-size: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #1f2937;
+}
+
+.results-success,
+.results-error {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.success-icon {
+  color: #10b981;
+}
+
+.error-icon {
+  color: #ef4444;
+}
+
+.results-success h3 {
+  color: #10b981;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.results-error h3 {
+  color: #ef4444;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.results-success p,
+.results-error p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.failed-tools {
+  margin-top: 20px;
+  text-align: left;
+  background-color: #fef2f2;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.failed-tools h4 {
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.failed-tools ul {
+  margin-left: 20px;
+  color: #991b1b;
+}
+
+.results-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

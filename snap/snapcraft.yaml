@@ -1,0 +1,41 @@
+name: devsetup-pro
+version: '0.1.0'
+summary: Ubuntu Developer Tool Installer
+description: |
+  DevSetup Pro is a modern GUI tool that simplifies developer environment 
+  setup on Ubuntu by replacing manual command-line installations with an 
+  intuitive graphical interface.
+
+grade: stable
+confinement: classic
+base: core22
+
+apps:
+  devsetup-pro:
+    command: devsetup-pro
+    plugs:
+      - network
+      - home
+      - desktop
+      - desktop-legacy
+      - x11
+      - wayland
+      - password-manager-service
+
+parts:
+  devsetup-pro:
+    plugin: dump
+    source: .
+    override-build: |
+      npm install
+      npm run build
+      npx electron-builder --linux --dir
+      cp -r dist/linux-unpacked $SNAPCRAFT_PART_INSTALL/
+    build-packages:
+      - nodejs
+      - npm
+    stage-packages:
+      - libnotify4
+      - libappindicator3-1
+      - libxtst6
+      - libnss3

@@ -1,0 +1,148 @@
+.profiles {
+  min-height: 80vh;
+}
+
+.profiles.loading,
+.profiles.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+/* Header */
+.profiles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.header-info h1 {
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.header-info p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Empty State */
+.profiles-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.profiles-empty h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #1f2937;
+}
+
+.profiles-empty p {
+  color: #6b7280;
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+/* Profiles Grid */
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s;
+}
+
+.profile-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.profile-header h3 {
+  font-size: 20px;
+  color: #1f2937;
+  flex: 1;
+}
+
+.profile-date {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.profile-description {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.profile-stats {
+  margin-bottom: 12px;
+}
+
+.tool-count {
+  display: inline-block;
+  background-color: #eff6ff;
+  color: #2563eb;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-tools-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  min-height: 28px;
+}
+
+.tool-tag {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tool-tag.more {
+  background-color: #e5e7eb;
+  color: #6b7280;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-actions button {
+  flex: 1;
+  min-width: 80px;
+}

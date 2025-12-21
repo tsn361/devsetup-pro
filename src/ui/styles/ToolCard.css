@@ -1,0 +1,110 @@
+.tool-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tool-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tool-card.selected {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.tool-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tool-card.installed {
+  background-color: #f0fdf4;
+  border-color: #10b981;
+}
+
+.tool-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tool-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.tool-name {
+  font-size: 18px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.installed-badge {
+  background-color: #10b981;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tool-description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.tool-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.tool-package {
+  font-family: monospace;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.tool-size {
+  font-weight: 500;
+}
+
+.tool-dependencies,
+.tool-conflicts {
+  font-size: 12px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f9fafb;
+  border-radius: 4px;
+}
+
+.tool-conflicts {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.tool-website {
+  display: inline-block;
+  margin-top: 8px;
+  color: #2563eb;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tool-website:hover {
+  text-decoration: underline;
+}

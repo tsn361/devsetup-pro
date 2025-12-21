@@ -1,0 +1,58 @@
+appId: com.devsetup.pro
+productName: DevSetup Pro
+copyright: Copyright © 2025 DevSetup Team
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - src/**/*
+  - public/**/*
+  - package.json
+  - node_modules/**/*
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+    - target: snap
+      arch:
+        - x64
+  category: Development
+  synopsis: Ubuntu Developer Tool Installer
+  description: A modern GUI tool for installing developer tools on Ubuntu
+  desktop:
+    Name: DevSetup Pro
+    Comment: Install developer tools with one click
+    Categories: Development;Utility;
+    Terminal: false
+
+appImage:
+  license: LICENSE
+  
+deb:
+  depends:
+    - gconf2
+    - gconf-service
+    - libnotify4
+    - libappindicator1
+    - libxtst6
+    - libnss3
+
+snap:
+  confinement: classic
+  grade: stable
+  summary: Ubuntu Developer Tool Installer
+  description: |
+    DevSetup Pro simplifies developer environment setup on Ubuntu.
+    Install multiple development tools with an intuitive graphical interface.
+
+publish:
+  provider: github
+  owner: your-username
+  repo: devsetup-pro

@@ -1,0 +1,128 @@
+{
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "web-servers",
+      "name": "Web Servers",
+      "icon": "server",
+      "description": "HTTP and reverse proxy servers",
+      "tools": [
+        {
+          "id": "nginx",
+          "name": "Nginx",
+          "description": "High-performance, lightweight web server and reverse proxy",
+          "package": "nginx-full",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": ["apache2"],
+          "size": "1.5MB",
+          "postInstall": "sudo systemctl enable nginx",
+          "checkCommand": "nginx -v",
+          "website": "https://nginx.org"
+        },
+        {
+          "id": "apache2",
+          "name": "Apache2",
+          "description": "Popular open-source web server",
+          "package": "apache2",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": ["nginx"],
+          "size": "2.1MB",
+          "postInstall": "sudo systemctl enable apache2",
+          "checkCommand": "apache2 -v",
+          "website": "https://httpd.apache.org/"
+        }
+      ]
+    },
+    {
+      "id": "databases",
+      "name": "Databases",
+      "icon": "database",
+      "description": "Database servers and tools",
+      "tools": [
+        {
+          "id": "mysql",
+          "name": "MySQL",
+          "description": "Relational database management system",
+          "package": "mysql-server",
+          "version": "8.0",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "150MB",
+          "postInstall": "sudo mysql_secure_installation",
+          "checkCommand": "mysql --version",
+          "website": "https://www.mysql.com/"
+        },
+        {
+          "id": "postgresql",
+          "name": "PostgreSQL",
+          "description": "Advanced relational database",
+          "package": "postgresql",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "80MB",
+          "postInstall": "sudo systemctl enable postgresql",
+          "checkCommand": "psql --version",
+          "website": "https://www.postgresql.org/"
+        }
+      ]
+    },
+    {
+      "id": "languages",
+      "name": "Languages & Runtimes",
+      "icon": "code",
+      "description": "Programming languages and interpreters",
+      "tools": [
+        {
+          "id": "nodejs",
+          "name": "Node.js",
+          "description": "JavaScript runtime",
+          "package": "nodejs",
+          "version": "18",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "50MB",
+          "postInstall": "npm install -g npm@latest",
+          "checkCommand": "node --version",
+          "website": "https://nodejs.org/"
+        },
+        {
+          "id": "python3",
+          "name": "Python 3",
+          "description": "Python programming language",
+          "package": "python3 python3-pip",
+          "version": "3.10",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "100MB",
+          "postInstall": "sudo pip3 install --upgrade pip",
+          "checkCommand": "python3 --version",
+          "website": "https://www.python.org/"
+        }
+      ]
+    },
+    {
+      "id": "dev-tools",
+      "name": "Development Tools",
+      "icon": "wrench",
+      "description": "Tools for development",
+      "tools": [
+        {
+          "id": "git",
+          "name": "Git",
+          "description": "Version control system",
+          "package": "git",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "10MB",
+          "postInstall": "",
+          "checkCommand": "git --version",
+          "website": "https://git-scm.com/"
+        }
+      ]
+    }
+  ]
+}
