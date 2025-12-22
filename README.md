@@ -8,6 +8,18 @@
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
+---
+
+## 💖 Support This Project
+
+If you find DevSetup Pro helpful, consider supporting its development:
+
+<a href="https://www.buymeacoffee.com/devsetuppro" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+Your support helps maintain and improve this tool for the community! ☕
+
+---
+
 ## 🔒 Security & Trust
 
 **DevSetup Pro uses ONLY native Ubuntu commands - no external code or binary downloads.**
@@ -30,9 +42,7 @@ dpkg -l | grep <package-name>  # to check installation
 Your system security remains intact - we just make it easier to use Ubuntu's built-in package manager.
 
 ## Vision
-Create a professional desktop application that simplifies developer environment setup on Ubuntu by replacing manual command-line installations with an intuitive graphical interface.
-
-**Future expansion:** macOS version as a premium/paid product
+Simplify developer environment setup on Ubuntu by providing an intuitive graphical interface that replaces complex command-line operations.
 
 ---
 
@@ -120,91 +130,69 @@ devsetup-pro/
 
 | Layer | Technology | Reason |
 |-------|-----------|--------|
-| **Desktop** | Electron / Tauri | Cross-platform, native feel |
-| **Frontend** | React + TypeScript | Modern, component-based |
+| **Desktop** | Electron | Cross-platform, native feel |
+| **Frontend** | React | Modern, component-based |
 | **Backend** | Node.js + Express | Fast, easy async handling |
-| **Package Mgmt** | apt wrapper | Native Ubuntu package manager |
-| **Database** | SQLite | Store profiles locally |
-| **Auth** | PolicyKit / sudo password | Handle privilege escalation |
+| **Package Mgmt** | apt-get wrapper | Native Ubuntu package manager |
+| **Storage** | localStorage + JSON | Simple local data storage |
+| **Auth** | sudo password | Handle privilege escalation |
 
 ---
 
-## Quick Start
+## Features
 
-1. **Review Documentation**
-   - Start with [docs/INDEX.md](docs/INDEX.md) for a complete overview
-   - Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical design
-   - Read [docs/ROADMAP.md](docs/ROADMAP.md) for timeline
+### Current (v0.1.0 MVP)
 
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start Development**
-   ```bash
-   npm run dev
-   ```
-
----
-
-## Development Timeline
-
-- **v0.1 (MVP):** Jan-Feb 2025 - Core features
-- **v0.2:** Mar-Apr 2025 - Enhanced features
-- **v0.3:** May-Jun 2025 - Polish
-- **v1.0:** Jul 2025 - Stable release
-- **macOS:** Aug 2025+ - Premium paid version
-
----
-
-## Key Features (MVP)
-
-- ✅ Tool selection UI (30+ tools)
-- ✅ One-click installation
-- ✅ Real-time progress tracking
+- ✅ 24 development tools across 4 categories
+- ✅ One-click install/uninstall
+- ✅ Real-time progress tracking with logs
 - ✅ System requirements check
-- ✅ Save/load installation profiles
-- ✅ Installation logs
-- ✅ Error handling & recovery
+- ✅ Save/load/export installation profiles
+- ✅ Search and filter tools
+- ✅ Windows WSL support
+- ✅ Settings persistence
 
----
+### Tool Categories
 
-## Revenue Model
-
-**Ubuntu:** Free (user acquisition)
-**macOS:** $9.99/month (individual), $49.99/month (teams)
-**Enterprise:** Custom pricing
-
-**Year 1 Projection:** $100,000-150,000
+- **Web Servers:** nginx, apache2
+- **Databases:** mysql, postgresql, mongodb, redis
+- **Languages:** nodejs, python3, ruby, golang, php, java
+- **Dev Tools:** git, docker, vim, curl, wget, build-essential, htop, tmux
 
 ---
 
 ## Documentation
 
-All documentation is in the `docs/` folder:
-
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Technical design
-- [FEATURES.md](docs/FEATURES.md) - Feature specifications
-- [ROADMAP.md](docs/ROADMAP.md) - Development timeline
-- [BUSINESS_PLAN.md](docs/BUSINESS_PLAN.md) - Market & revenue
-- [GETTING_STARTED.md](docs/GETTING_STARTED.md) - Dev setup
-- [INDEX.md](docs/INDEX.md) - Documentation index
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Technical design and implementation details
+- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute to this project
 
 ---
 
-## Getting Help
+## Contributing
 
-1. Read the relevant documentation file
-2. Check [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for setup issues
-3. Review [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design questions
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
 ## License
-MIT
+
+Business Source License 1.1 - Free for individuals and small teams (< 10 employees).
+See [LICENSE](LICENSE) for full details.
+
+After 4 years (2029), this code will become Apache 2.0 licensed (fully open source).
 
 ---
 
-Created: December 21, 2025
-Status: Planning & MVP Development
+## Support & Community
+
+- 🐛 [Report Issues](https://github.com/tsn361/devsetup-pro/issues)
+- 💬 [Discussions](https://github.com/tsn361/devsetup-pro/discussions)
+- ⭐ Star this repo if you find it useful!
+
+---
+
+---
+
+**Created:** December 2025  
+**Status:** MVP Complete (v0.1.0)  
+**Maintainer:** [@tsn361](https://github.com/tsn361)
