@@ -1,11 +1,22 @@
 const { exec } = require('child_process');
 const { promisify } = require('util');
+const os = require('os');
 const execAsync = promisify(exec);
 
 /**
  * PackageManager - Handles apt package installation and management
  */
 class PackageManager {
+  /**
+   * Wrap command with WSL if running on Windows
+   */
+  static wrapCommand(command) {
+    if (os.platform() === 'win32') {
+      return `wsl bash -c "${command.replace(/"/g, '\\"')}"`;
+    }
+    return command;
+  }
+
   /**
    * Check if a package is installed
    * @param {string} packageName - Name of the package (can include multiple packages separated by space)
@@ -17,7 +28,8 @@ class PackageManager {
       const packages = packageName.split(' ').filter((p) => p.trim());
 
       for (const pkg of packages) {
-        const { stdout } = await execAsync(`dpkg -l | grep -E "^ii\\s+${pkg}\\s"`);
+        const command = this.wrapCommand(`dpkg -l | grep -E "^ii\\\\s+${pkg}\\\\s"`);
+        const { stdout } = await execAsync(command);
         if (!stdout.trim()) {
           return false;
         }
@@ -145,7 +157,8 @@ class PackageManager {
    */
   static async getPackageInfo(packageName) {
     try {
-      const { stdout } = await execAsync(`apt-cache show ${packageName}`);
+      const command = this.wrapCommand(`apt-cache show ${packageName}`);
+      const { stdout } = await execAsync(command);
 
       const info = {};
       const lines = stdout.split('\n');
@@ -177,7 +190,8 @@ class PackageManager {
    */
   static async getDependencies(packageName) {
     try {
-      const { stdout } = await execAsync(`apt-cache depends ${packageName}`);
+      const command = this.wrapCommand(`apt-cache depends ${packageName}`);
+      const { stdout } = await execAsync(command);
 
       const dependencies = [];
       const lines = stdout.split('\n');
@@ -207,8 +221,9 @@ class PackageManager {
     try {
       // Use echo to pass password to sudo
       const sudoCommand = `echo '${password}' | sudo -S ${command}`;
+      const wrappedCommand = this.wrapCommand(sudoCommand);
 
-      const { stdout, stderr } = await execAsync(sudoCommand, {
+      const { stdout, stderr } = await execAsync(wrappedCommand, {
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large outputs
       });
 

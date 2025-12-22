@@ -36,20 +36,6 @@ class IPCService {
    * Get system information
    */
   static async getSystemInfo() {
-    if (!isElectron()) {
-      return {
-        platform: 'browser',
-        arch: 'unknown',
-        nodeVersion: 'N/A',
-        electronVersion: 'N/A',
-        appVersion: '0.1.0',
-        totalMemory: 0,
-        freeMemory: 0,
-        cpus: 0,
-        hostname: 'browser',
-      };
-    }
-    
     try {
       return await ipcRenderer.invoke('get-system-info');
     } catch (error) {
@@ -62,15 +48,6 @@ class IPCService {
    * Run system check
    */
   static async systemCheck() {
-    if (!isElectron()) {
-      return {
-        platform: false,
-        apt: false,
-        internet: false,
-        diskSpace: false,
-        sudo: false,
-      };
-    }
     try {
       return await ipcRenderer.invoke('system-check');
     } catch (error) {
@@ -136,6 +113,19 @@ class IPCService {
       return await ipcRenderer.invoke('delete-profile', profileId);
     } catch (error) {
       console.error('Error deleting profile:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Uninstall a tool
+   */
+  static async uninstallTool(toolId, password) {
+    try {
+      if (!ipcRenderer) return { success: false };
+      return await ipcRenderer.invoke('uninstall-tool', { toolId, password });
+    } catch (error) {
+      console.error('Error uninstalling tool:', error);
       throw error;
     }
   }

@@ -15,10 +15,14 @@ function Installing() {
   const [isComplete, setIsComplete] = useState(false);
   const [results, setResults] = useState(null);
 
-  const { tools, password } = location.state || {};
+  const { tools, password, mode = 'install', toolName } = location.state || {};
 
   useEffect(() => {
-    if (!tools || !password) {
+    if (!tools && !toolName) {
+      navigate('/');
+      return;
+    }
+    if (!password) {
       navigate('/');
       return;
     }
@@ -26,7 +30,7 @@ function Installing() {
     // Listen for installation updates
     IPCService.onInstallationUpdate((data) => {
       setProgress(data.progress || 0);
-      setStatus(data.status || 'Installing...');
+      setStatus(data.status || (mode === 'uninstall' ? 'Uninstalling...' : 'Installing...'));
       setCurrentTool(data.message || '');
       
       if (data.message) {
@@ -34,14 +38,19 @@ function Installing() {
       }
     });
 
-    // Start installation
-    startInstallation();
+    // Start installation or uninstallation
+    if (mode === 'uninstall') {
+      startUninstallation();
+    } else {
+      startInstallation();
+    }
 
     // Cleanup
     return () => {
       IPCService.removeInstallationUpdateListener();
     };
-  }, [tools, password, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tools, password, mode, navigate]);
 
   const startInstallation = async () => {
     try {
@@ -70,20 +79,58 @@ function Installing() {
     }
   };
 
+  const startUninstallation = async () => {
+    try {
+      setStatus('Uninstalling...');
+
+      const response = await IPCService.uninstallTool(tools, password);
+
+      if (response.success) {
+        setStatus('Completed!');
+        setProgress(100);
+      } else {
+        setStatus('Failed');
+      }
+
+      setResults(response);
+      setIsComplete(true);
+    } catch (err) {
+      console.error('Uninstallation error:', err);
+      setStatus('Error');
+      setLogs(prev => [...prev, `❌ Uninstallation error: ${err.message}`]);
+      setIsComplete(true);
+      setResults({ success: false, error: err.message });
+    }
+  };
+
   const handleDone = () => {
-    navigate('/');
+    navigate('/', { state: { refresh: true } });
   };
 
   const handleViewLogs = () => {
-    // TODO: Export logs to file
-    alert('Log export feature coming soon!');
+    // Export logs to file
+    const logText = logs.join('\n');
+    const blob = new Blob([logText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.download = `devsetup-${mode || 'install'}-logs-${timestamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="installing">
       <div className="installing-header">
-        <h1>Installing Tools</h1>
-        <p>Please wait while we install the selected tools...</p>
+        <h1>{mode === 'uninstall' ? 'Uninstalling Tool' : 'Installing Tools'}</h1>
+        <p>
+          {mode === 'uninstall' 
+            ? 'Please wait while we uninstall the tool...' 
+            : 'Please wait while we install the selected tools...'}
+        </p>
       </div>
 
       <div className="installing-content">
@@ -97,20 +144,22 @@ function Installing() {
 
         {isComplete && results && (
           <div className="installation-results">
-            <h2>Installation Summary</h2>
+            <h2>{mode === 'uninstall' ? 'Uninstallation Summary' : 'Installation Summary'}</h2>
             
             {results.success ? (
               <div className="results-success">
                 <div className="success-icon">✓</div>
-                <h3>Installation Completed Successfully!</h3>
+                <h3>{mode === 'uninstall' ? 'Uninstallation Completed Successfully!' : 'Installation Completed Successfully!'}</h3>
                 <p>
-                  {results.installed || tools.length} of {tools.length} tools installed
+                  {mode === 'uninstall' 
+                    ? `${toolName} has been removed from your system`
+                    : `${results.installed || tools.length} of ${tools.length} tools installed`}
                 </p>
               </div>
             ) : (
               <div className="results-error">
                 <div className="error-icon">✗</div>
-                <h3>Installation Failed</h3>
+                <h3>{mode === 'uninstall' ? 'Uninstallation Failed' : 'Installation Failed'}</h3>
                 <p>{results.error}</p>
                 {results.results && (
                   <div className="failed-tools">

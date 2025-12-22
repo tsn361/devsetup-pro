@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ToolCard from './ToolCard';
 import '../styles/CategorySection.css';
 
-function CategorySection({ category, selectedTools, onToolToggle }) {
+function CategorySection({ category, selectedTools, onToolToggle, onUninstall }) {
   const [expanded, setExpanded] = useState(true);
 
   const toggleExpanded = () => {
@@ -35,6 +35,7 @@ function CategorySection({ category, selectedTools, onToolToggle }) {
               tool={tool}
               selected={selectedTools.includes(tool.id)}
               onToggle={onToolToggle}
+              onUninstall={onUninstall}
             />
           ))}
         </div>

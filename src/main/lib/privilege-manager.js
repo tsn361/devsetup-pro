@@ -1,12 +1,23 @@
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const crypto = require('crypto');
+const os = require('os');
 const execAsync = promisify(exec);
 
 /**
  * PrivilegeManager - Handles sudo password verification and privileged command execution
  */
 class PrivilegeManager {
+  /**
+   * Wrap command with WSL if running on Windows
+   */
+  static wrapCommand(command) {
+    if (os.platform() === 'win32') {
+      return `wsl bash -c "${command.replace(/"/g, '\\"')}"`;
+    }
+    return command;
+  }
+
   /**
    * Verify sudo password
    * @param {string} password - Password to verify
@@ -19,7 +30,13 @@ class PrivilegeManager {
       }
 
       // Try to run a simple command with sudo to verify password
-      const testCommand = `echo '${password}' | sudo -S echo "test" 2>&1`;
+      let testCommand;
+      if (os.platform() === 'win32') {
+        // In WSL, use a different approach with sudo
+        testCommand = `wsl bash -c "echo '${password}' | sudo -S whoami 2>/dev/null"`;
+      } else {
+        testCommand = `echo '${password}' | sudo -S echo "test" 2>&1`;
+      }
 
       const { stdout, stderr } = await execAsync(testCommand, {
         timeout: 5000, // 5 second timeout
@@ -31,6 +48,11 @@ class PrivilegeManager {
       // If password is wrong, sudo will output "Sorry, try again"
       if (output.includes('Sorry, try again') || output.includes('incorrect password')) {
         return false;
+      }
+
+      // In WSL, successful sudo whoami returns 'root'
+      if (os.platform() === 'win32' && stdout.trim() === 'root') {
+        return true;
       }
 
       // If successful, should see "test" in output
@@ -66,6 +88,7 @@ class PrivilegeManager {
 
       // Execute the command with sudo
       const sudoCommand = `echo '${password}' | sudo -S ${command}`;
+      const wrappedCommand = this.wrapCommand(sudoCommand);
 
       const execOptions = {
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer
@@ -73,7 +96,7 @@ class PrivilegeManager {
         ...options,
       };
 
-      const { stdout, stderr } = await execAsync(sudoCommand, execOptions);
+      const { stdout, stderr } = await execAsync(wrappedCommand, execOptions);
 
       return {
         success: true,

@@ -4,14 +4,17 @@
 
 DevSetup Pro is an Electron + React desktop application that provides a GUI wrapper around Ubuntu's apt package manager, allowing users to install multiple development tools with checkboxes and one-click installation.
 
+**Key Feature:** Works on Windows via WSL (Windows Subsystem for Linux) by wrapping all commands with `wsl bash -c`.
+
 ## Tech Stack
 
 - **Desktop Framework:** Electron 26+
-- **Frontend:** React 18 + TypeScript
-- **Backend:** Node.js + Express
-- **Package Manager:** apt (Ubuntu native)
-- **Database:** SQLite (local storage)
+- **Frontend:** React 18 (JavaScript, no TypeScript)
+- **Backend:** Node.js + Express (port 3001)
+- **Package Manager:** apt-get (Ubuntu native)
+- **Storage:** localStorage (settings) + JSON files (profiles)
 - **Privilege Escalation:** sudo + password input
+- **WSL Support:** Automatic command wrapping for Windows compatibility
 
 ## Architecture Diagram
 
@@ -63,13 +66,14 @@ DevSetup Pro is an Electron + React desktop application that provides a GUI wrap
 
 1. **package-manager.js**
    - apt-get command wrapper
+   - WSL command wrapping for Windows (`wsl bash -c "..."`)
    - Package installation/uninstallation
-   - Dependency checking
+   - Installation status checking via dpkg
 
 2. **privilege-manager.js**
-   - Sudo password handling
+   - Sudo password handling (WSL-compatible)
    - Command execution with privileges
-   - Password validation
+   - Password validation (different methods for WSL vs native)
 
 3. **dependency-resolver.js**
    - Dependency graph analysis
@@ -77,7 +81,7 @@ DevSetup Pro is an Electron + React desktop application that provides a GUI wrap
    - Installation order calculation
 
 4. **profile-manager.js**
-   - Save/load profiles
+   - Save/load profiles (JSON files in user data directory)
    - Export/import functionality
    - Profile validation
 
@@ -88,40 +92,48 @@ DevSetup Pro is an Electron + React desktop application that provides a GUI wrap
 - Global state management
 - Theme & styling
 
-**Components:**
-- `ToolCard` - Individual tool selection
-- `CategorySection` - Grouped tools with expand/collapse
+**Components:** with install/uninstall button
+- `CategorySection` - Grouped tools with expand/collapse (4 categories: Web Servers, Databases, Languages, Dev Tools)
 - `ProgressBar` - Installation progress visualization
-- `LogViewer` - Real-time installation logs
+- `LogViewer` - Real-time installation logs with export functionality
 - `PasswordDialog` - Secure sudo password input
-- `ProfileManager` - Save/load profiles
+- `ProfileDialog` - Save profile with name and description input
 
 **Pages:**
-- `Dashboard` - Main tool selection page
-- `Installing` - Progress page during installation
-- `Profiles` - Saved profiles management
-- `Settings` - Application settings
+- `Dashboard` - Main tool selection page (24 tools) with search and category filter
+- `Installing` - Unified progress page for both install/uninstall operations
+- `Profiles` - Saved profiles management with export/import
+- `Settings` - Application settings (localStorage-persisted)
 
 **State Management:**
-- Redux or Zustand for global state
+- React useState hooks for local state
+- React Router for navigation
+- IPC communication for backend interaction
+- No Redux or external state librarystate
 - Local component state for UI
 
 ## API Endpoints
 
 ### Endpoints
-
-```
-GET    /api/tools              Get all available tools
-GET    /api/tools/:id          Get specific tool details
-GET    /api/system/info        Get system information
-GET    /api/system/check       Pre-install compatibility check
+ with installation status
+GET    /api/system/info        Get system information (OS, memory, CPUs)
+GET    /api/system/check       Pre-install compatibility check (apt, internet, disk, sudo)
 GET    /api/profiles           List saved profiles
 
-POST   /api/install            Start installation
+POST   /api/install            Start installation (tools array + password)
 POST   /api/verify-sudo        Verify sudo password
 POST   /api/profiles           Save new profile
 
-DELETE /api/tools/:id          Uninstall tool
+DELETE /api/tools/:id          Uninstall tool (requires password)
+DELETE /api/profiles/:id       Delete profile
+```
+
+### Actual Tool Catalog (24 tools)
+
+**Web Servers:** nginx, apache2
+**Databases:** mysql, postgresql, mongodb, redis
+**Languages:** nodejs, python3, ruby, golang, php, java (OpenJDK)
+**Dev Tools:** git, docker, vim, curl, wget, build-essential, htop, tmuxETE /api/tools/:id          Uninstall tool
 DELETE /api/profiles/:id       Delete profile
 ```
 
@@ -186,59 +198,71 @@ mainWindow.webContents.send('installation-update', {
 // Request installation
 const result = await ipcRenderer.invoke('install-tools', {
   tools: ['nginx', 'mysql'],
-  password: hashedPassword
-})
+  paStorage Method: File-based + localStorage
+
+**Profiles:** Stored as JSON files in Electron's user data directory
+```javascript
+// Profile structure
+{
+  id: "unique-id",
+  name: "Full Stack Dev",
+  description: "Complete full-stack development setup",
+  tools: ["nodejs", "postgresql", "nginx", "git"],
+  created_at: "2025-12-23T10:30:00Z"
+}
 ```
 
-## Database Schema
-
-### Profiles Table
-```sql
-CREATE TABLE profiles (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  tools TEXT NOT NULL,  -- JSON array
-  created_at DATETIME,
-  updated_at DATETIME
-);
+**Settings:** Stored in browser localStorage
+```javascript
+// Settings structure
+{
+  showLogsRealtime: true,
+  autoScrollLogs: true,
+  checkUpdatesAuto: false,
+  showSystemWarnings: true
+}
 ```
 
-### Installation History
-```sql
-CREATE TABLE installations (
-  id TEXT PRIMARY KEY,
-  tools TEXT NOT NULL,  -- JSON array
+**No SQLite database** - Simplified approach using file system and localStorage.ools TEXT NOT NULL,  -- JSON array
   status TEXT,
   started_at DATETIME,
   completed_at DATETIME,
   logs TEXT
 );
 ```
-
-## Tool Definition Format
-
-```json
-{
-  "id": "nginx",
-  "name": "Nginx",
-  "description": "High-performance web server",
-  "package": "nginx-full",
+",
   "version": "latest",
   "dependencies": [],
-  "conflicts": ["apache2"],
-  "postInstall": "sudo systemctl enable nginx",
+  "conflicts": [],
+  "size": "10MB",
+  "postInstall": "",
   "checkCommand": "nginx -v",
   "website": "https://nginx.org"
 }
 ```
 
-## Security Considerations
+**Actual Configuration:** All tools defined in `src/config/tools.json` grouped by 4 categories.package": "nginx-full",
+  "version": "latest",password type field)
+   - Transmitted to backend only
+   - Kept only in memory during installation
+   - Never persisted to disk or logs
 
-1. **Sudo Password Handling**
-   - Accept via secure input (no echo)
-   - Hash before transmission
-   - Keep only in memory
+2. **Command Safety**
+   - Whitelist only pre-defined tools from tools.json
+   - Use child_process.exec with proper escaping
+   - WSL command wrapping sanitizes input
+   - All package names validated against config
+
+3. **File Access**
+   - Profiles restricted to Electron userData directory
+   - Validate all imported JSON profiles
+   - No arbitrary file system access
+
+4. **Native Commands Only**
+   - Uses ONLY Ubuntu native commands (apt-get, dpkg, sudo)
+   - No external downloads or script execution
+   - All packages from official Ubuntu repositories
+   - Complete transparency - all commands logged
    - Never log to disk
 
 2. **Command Safety**
@@ -270,9 +294,25 @@ const errorMessages = {
 
 - App startup: < 2 seconds
 - Tool list load: < 500ms
-- Progress updates: < 500ms
-- Support 50+ tools without lag
+- ProgrElectron with React dev server
+# React: http://localhost:3000
+# Express backend: http://localhost:3001
+# Hot reload enabled
+```
 
+## WSL Support
+
+All system commands automatically wrapped when running on Windows:
+
+```javascript
+// On Linux:
+dpkg -l | grep nginx
+
+// On Windows (auto-wrapped):
+wsl bash -c "dpkg -l | grep nginx"
+```
+
+Platform detection: `os.platform() === 'win32'` triggers WSL wrapping.
 ## Development Setup
 
 ```bash

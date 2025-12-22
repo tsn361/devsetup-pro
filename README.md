@@ -8,6 +8,32 @@
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
+## 🔒 Security & Trust
+
+**DevSetup Pro uses ONLY native Ubuntu commands - no external code or binary downloads.**
+
+- ✅ **100% Native:** Uses `apt-get`, `dpkg`, `sudo` - standard Ubuntu tools
+- ✅ **No Downloads:** Doesn't download scripts or binaries from third parties
+- ✅ **No Execution:** Doesn't execute remote code
+- ✅ **Official Repos:** All packages come from official Ubuntu repositories
+- ✅ **Transparent:** Every command is logged and shown in real-time
+- ✅ **Open Source:** All code is visible and auditable (BSL 1.1)
+
+**How it works:** This app is simply a GUI wrapper that runs the same commands you would type manually:
+```bash
+# What DevSetup Pro does behind the scenes:
+sudo apt-get update
+sudo apt-get install -y <package-name>
+dpkg -l | grep <package-name>  # to check installation
+```
+
+Your system security remains intact - we just make it easier to use Ubuntu's built-in package manager.
+
+## Vision
+Create a professional desktop application that simplifies developer environment setup on Ubuntu by replacing manual command-line installations with an intuitive graphical interface.
+
+**Future expansion:** macOS version as a premium/paid product
+
 ---
 
 ## Problem Statement
@@ -18,6 +44,39 @@ Ubuntu developers face challenges:
 - ❌ No easy way to share dev stack configurations
 - ❌ Complex dependency management
 - ❌ Steep learning curve for beginners
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Ubuntu 20.04+ (or WSL2 on Windows)
+- Node.js 18+
+- npm 9+
+
+### Installation & Run
+
+**Option 1: On Ubuntu/Linux directly**
+```bash
+git clone https://github.com/tsn361/devsetup-pro.git
+cd devsetup-pro
+npm install
+npm run dev
+```
+
+**Option 2: On Windows (via WSL2)**
+```bash
+# First time setup
+wsl -d Ubuntu bash
+mkdir ~/projects
+cd ~/projects
+git clone https://github.com/tsn361/devsetup-pro.git
+cd devsetup-pro
+npm install
+
+# Daily start (or use start-devsetup.bat)
+npm run dev
+```
 
 ---
 
@@ -33,137 +92,119 @@ Ubuntu developers face challenges:
 
 ---
 
-## 🚀 Quick Start
+## Project Structure
 
-### Prerequisites
-- Ubuntu 20.04+ (or WSL2 on Windows)
-- Node.js 18+
-- npm 9+
-
-### Installation
-
-**On Ubuntu/Linux:**
-```bash
-git clone https://github.com/tsn361/devsetup-pro.git
-cd devsetup-pro
-npm install
-npm run dev
+```
+devsetup-pro/
+├── docs/                          # Documentation
+│   ├── ARCHITECTURE.md            # Technical architecture
+│   ├── FEATURES.md                # Detailed features list
+│   ├── ROADMAP.md                 # Development roadmap
+│   ├── BUSINESS_PLAN.md           # Market analysis
+│   ├── GETTING_STARTED.md         # Developer guide
+│   └── INDEX.md                   # Documentation index
+├── src/
+│   ├── main/                      # Backend (Electron + Express)
+│   ├── ui/                        # Frontend (React)
+│   └── config/
+│       └── tools.json             # Tool definitions
+├── tests/
+├── package.json
+├── .gitignore
+└── LICENSE
 ```
 
-**On Windows (via WSL2):**
-```bash
-# First time setup in WSL Ubuntu
-mkdir ~/projects
-cd ~/projects
-git clone https://github.com/tsn361/devsetup-pro.git
-cd devsetup-pro
-npm install
+---
 
-# Run the app
-npm run dev
-```
+## Tech Stack
 
-**Windows Quick Launch:**
-Double-click `start-devsetup.bat` to launch automatically via WSL2.
+| Layer | Technology | Reason |
+|-------|-----------|--------|
+| **Desktop** | Electron / Tauri | Cross-platform, native feel |
+| **Frontend** | React + TypeScript | Modern, component-based |
+| **Backend** | Node.js + Express | Fast, easy async handling |
+| **Package Mgmt** | apt wrapper | Native Ubuntu package manager |
+| **Database** | SQLite | Store profiles locally |
+| **Auth** | PolicyKit / sudo password | Handle privilege escalation |
 
 ---
 
-## 📦 Features
+## Quick Start
 
-### Tool Categories
-- **Programming Languages** - Node.js, Python, Go, Rust, etc.
-- **Version Control** - Git, GitHub CLI, GitKraken
-- **Databases** - PostgreSQL, MySQL, MongoDB, Redis
-- **Web Servers** - Nginx, Apache
-- **Development Tools** - Docker, VS Code, Postman
-- **CLI Tools** - curl, wget, vim, tmux, htop
+1. **Review Documentation**
+   - Start with [docs/INDEX.md](docs/INDEX.md) for a complete overview
+   - Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for technical design
+   - Read [docs/ROADMAP.md](docs/ROADMAP.md) for timeline
 
-### Core Features
-- **Automatic Dependency Resolution** - No manual `apt-get` commands
-- **Conflict Detection** - Warns before installing incompatible tools
-- **Installation Profiles** - Save and export your tool selections
-- **Real-Time Logs** - Watch installation progress live
-- **System Validation** - Checks disk space, internet, sudo access
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
----
-
-## 🏗️ Tech Stack
-
-- **Frontend:** React 18 + React Router
-- **Backend:** Electron (main process) + Express API
-- **Package Management:** Custom apt-get wrapper
-- **Build:** electron-builder (AppImage, .deb, Snap)
+3. **Start Development**
+   ```bash
+   npm run dev
+   ```
 
 ---
 
-## 📖 Documentation
+## Development Timeline
 
-- [Architecture Overview](docs/ARCHITECTURE.md)
-- [Licensing Strategy](docs/LICENSING_STRATEGY.md)
-- [Contributing Guidelines](CONTRIBUTING.md)
-
----
-
-## 📜 License
-
-**Business Source License 1.1**
-
-This project uses the [Business Source License 1.1](LICENSE), which means:
-
-### ✅ Free for:
-- Individual developers
-- Students and educators
-- Non-profit organizations
-- Companies with < 10 employees
-- Personal and open-source projects
-
-### 💼 Commercial License Required for:
-- Companies with 10+ employees
-- SaaS/hosted services
-- Redistribution as commercial product
-- Enterprise deployments
-
-### 🔓 Open Source Conversion
-After 4 years (December 21, 2029), this code automatically becomes **Apache 2.0** licensed (fully open source).
-
-**Commercial licensing:** business@devsetup.pro
+- **v0.1 (MVP):** Jan-Feb 2025 - Core features
+- **v0.2:** Mar-Apr 2025 - Enhanced features
+- **v0.3:** May-Jun 2025 - Polish
+- **v1.0:** Jul 2025 - Stable release
+- **macOS:** Aug 2025+ - Premium paid version
 
 ---
 
-## 🤝 Contributing
+## Key Features (MVP)
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Contributor License Agreement (CLA)
-- Code style guidelines
-- Pull request process
-
-All contributors must sign the CLA via `git commit -s` (sign-off).
-
----
-
-## 🗺️ Roadmap
-
-### Current Status: MVP (v0.1.0)
-- ✅ Basic GUI with tool selection
-- ✅ Automatic dependency resolution
-- ✅ Real-time installation progress
-- ✅ Profile save/load/export
-- ✅ System checks and validation
-
-### Upcoming Features
-- 🔄 AppImage/Snap distribution
-- 🔄 Advanced filtering and search
-- 🔄 Post-install configuration wizards
-- 🔄 Community-contributed tool definitions
+- ✅ Tool selection UI (30+ tools)
+- ✅ One-click installation
+- ✅ Real-time progress tracking
+- ✅ System requirements check
+- ✅ Save/load installation profiles
+- ✅ Installation logs
+- ✅ Error handling & recovery
 
 ---
 
-## 💬 Support
+## Revenue Model
 
-- **Issues:** [GitHub Issues](https://github.com/tsn361/devsetup-pro/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/tsn361/devsetup-pro/discussions)
-- **Commercial Support:** business@devsetup.pro
+**Ubuntu:** Free (user acquisition)
+**macOS:** $9.99/month (individual), $49.99/month (teams)
+**Enterprise:** Custom pricing
+
+**Year 1 Projection:** $100,000-150,000
 
 ---
 
-**Built with ❤️ for the Ubuntu developer community.**
+## Documentation
+
+All documentation is in the `docs/` folder:
+
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Technical design
+- [FEATURES.md](docs/FEATURES.md) - Feature specifications
+- [ROADMAP.md](docs/ROADMAP.md) - Development timeline
+- [BUSINESS_PLAN.md](docs/BUSINESS_PLAN.md) - Market & revenue
+- [GETTING_STARTED.md](docs/GETTING_STARTED.md) - Dev setup
+- [INDEX.md](docs/INDEX.md) - Documentation index
+
+---
+
+## Getting Help
+
+1. Read the relevant documentation file
+2. Check [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) for setup issues
+3. Review [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design questions
+
+---
+
+## License
+MIT
+
+---
+
+Created: December 21, 2025
+Status: Planning & MVP Development

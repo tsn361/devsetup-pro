@@ -1,0 +1,13 @@
+/**
+ * DevSetup Pro - Ubuntu Developer Tool Installer
+ * 
+ * Copyright (c) 2025 DevSetup Team
+ * 
+ * This file is licensed under the Business Source License 1.1
+ * See LICENSE file in the root directory for full license terms.
+ * 
+ * Change Date: 2029-12-21
+ * Change License: Apache License 2.0
+ * 
+ * For commercial licensing inquiries: business@devsetup.pro
+ */

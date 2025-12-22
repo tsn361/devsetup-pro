@@ -60,15 +60,75 @@ function Profiles() {
   };
 
   const handleExportProfile = (profile) => {
-    // TODO: Implement export to file
-    const jsonString = JSON.stringify(profile, null, 2);
-    console.log('Export profile:', jsonString);
-    alert('Export feature coming soon!');
+    try {
+      // Create JSON blob
+      const jsonString = JSON.stringify(profile, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${profile.name.replace(/\s+/g, '_')}.json`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error exporting profile:', err);
+      alert('Failed to export profile');
+    }
   };
 
   const handleImportProfile = () => {
-    // TODO: Implement import from file
-    alert('Import feature coming soon!');
+    try {
+      // Create file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+          // Read file
+          const text = await file.text();
+          const profileData = JSON.parse(text);
+          
+          // Validate profile structure
+          if (!profileData.name || !Array.isArray(profileData.tools)) {
+            alert('Invalid profile file format');
+            return;
+          }
+          
+          // Save imported profile
+          const response = await IPCService.saveProfile({
+            name: `${profileData.name} (imported)`,
+            tools: profileData.tools
+          });
+          
+          if (response.success) {
+            await loadProfiles();
+            alert('Profile imported successfully!');
+          } else {
+            alert('Failed to import profile');
+          }
+        } catch (err) {
+          console.error('Error reading file:', err);
+          alert('Failed to read profile file. Make sure it\'s a valid JSON file.');
+        }
+      };
+      
+      input.click();
+    } catch (err) {
+      console.error('Error importing profile:', err);
+      alert('Failed to import profile');
+    }
   };
 
   if (loading) {

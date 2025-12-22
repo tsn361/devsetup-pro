@@ -124,9 +124,17 @@ app.get('/api/system/info', async (req, res) => {
     const { promisify } = require('util');
     const execAsync = promisify(exec);
 
+    // Helper to wrap commands with WSL on Windows
+    const wrapCommand = (cmd) => {
+      if (os.platform() === 'win32') {
+        return `wsl bash -c "${cmd.replace(/"/g, '\\"')}"`;
+      }
+      return cmd;
+    };
+
     let osVersion = 'Unknown';
     try {
-      const { stdout } = await execAsync('lsb_release -d');
+      const { stdout } = await execAsync(wrapCommand('lsb_release -d'));
       osVersion = stdout.replace('Description:', '').trim();
     } catch (e) {
       osVersion = `${os.type()} ${os.release()}`;
@@ -165,8 +173,16 @@ app.get('/api/system/check', async (req, res) => {
     const { promisify } = require('util');
     const execAsync = promisify(exec);
 
+    // Helper to wrap commands with WSL on Windows
+    const wrapCommand = (cmd) => {
+      if (os.platform() === 'win32') {
+        return `wsl bash -c "${cmd.replace(/"/g, '\\"')}"`;
+      }
+      return cmd;
+    };
+
     const checks = {
-      platform: os.platform() === 'linux',
+      platform: os.platform() === 'linux' || os.platform() === 'win32', // Accept Windows with WSL
       apt: false,
       internet: false,
       diskSpace: false,
@@ -175,7 +191,7 @@ app.get('/api/system/check', async (req, res) => {
 
     // Check apt availability
     try {
-      await execAsync('which apt-get');
+      await execAsync(wrapCommand('which apt-get'));
       checks.apt = true;
     } catch (e) {
       checks.apt = false;
@@ -183,7 +199,7 @@ app.get('/api/system/check', async (req, res) => {
 
     // Check internet connectivity
     try {
-      await execAsync('ping -c 1 8.8.8.8');
+      await execAsync(wrapCommand('ping -c 1 8.8.8.8'));
       checks.internet = true;
     } catch (e) {
       checks.internet = false;
@@ -191,7 +207,7 @@ app.get('/api/system/check', async (req, res) => {
 
     // Check disk space (require at least 1GB free)
     try {
-      const { stdout } = await execAsync("df / | tail -1 | awk '{print $4}'");
+      const { stdout } = await execAsync(wrapCommand("df / | tail -1 | awk '{print $4}'"));
       const freeSpaceKB = parseInt(stdout.trim());
       checks.diskSpace = freeSpaceKB > 1048576; // 1GB in KB
       checks.freeSpaceGB = (freeSpaceKB / 1048576).toFixed(2);
@@ -201,7 +217,7 @@ app.get('/api/system/check', async (req, res) => {
 
     // Check sudo availability
     try {
-      await execAsync('which sudo');
+      await execAsync(wrapCommand('which sudo'));
       checks.sudo = true;
     } catch (e) {
       checks.sudo = false;
@@ -450,6 +466,87 @@ app.delete('/api/profiles/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting profile:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/tools/:id - Uninstall a tool
+ */
+app.delete('/api/tools/:id', async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password is required',
+      });
+    }
+
+    // Verify password first
+    const isValidPassword = await PrivilegeManager.verifyPassword(password);
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid sudo password',
+      });
+    }
+
+    // Load tools config
+    if (!toolsConfig) {
+      await loadToolsConfig();
+    }
+
+    // Find the tool
+    const allTools = toolsConfig.categories.flatMap((cat) => cat.tools);
+    const tool = allTools.find((t) => t.id === req.params.id);
+
+    if (!tool) {
+      return res.status(404).json({
+        success: false,
+        error: 'Tool not found',
+      });
+    }
+
+    // Check if tool is installed
+    const isInstalled = await PackageManager.isInstalled(tool.package);
+    if (!isInstalled) {
+      console.log(`Tool ${tool.name} (${tool.package}) is not installed`);
+      return res.status(400).json({
+        success: false,
+        error: 'Tool is not installed',
+      });
+    }
+
+    console.log(`Starting uninstall of ${tool.name} (${tool.package})...`);
+    console.log(`Command: apt-get remove -y ${tool.package}`);
+
+    // Uninstall the package
+    const result = await PackageManager.uninstall(tool.package, password);
+
+    if (result.success) {
+      console.log(`✓ Successfully uninstalled ${tool.name}`);
+      console.log(`Output: ${result.output}`);
+    } else {
+      console.error(`✗ Failed to uninstall ${tool.name}`);
+      console.error(`Error: ${result.error}`);
+    }
+
+    res.json({
+      success: result.success,
+      message: result.message,
+      output: result.output,
+      tool: {
+        id: tool.id,
+        name: tool.name,
+      },
+    });
+  } catch (error) {
+    console.error('Error uninstalling tool:', error);
     res.status(500).json({
       success: false,
       error: error.message,

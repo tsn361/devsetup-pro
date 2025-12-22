@@ -242,6 +242,67 @@ ipcMain.handle('delete-profile', async (event, profileId) => {
 });
 
 /**
+ * Uninstall tool
+ */
+ipcMain.handle('uninstall-tool', async (event, { toolId, password }) => {
+  try {
+    // Send initial update
+    sendInstallationUpdate({
+      toolId: toolId,
+      status: 'uninstalling',
+      progress: 10,
+      message: `Starting uninstallation...`,
+    });
+
+    const axios = require('axios');
+    
+    sendInstallationUpdate({
+      toolId: toolId,
+      status: 'uninstalling',
+      progress: 30,
+      message: `Running: apt-get remove -y (package)`,
+    });
+
+    const response = await axios.delete(`http://localhost:3001/api/tools/${toolId}`, {
+      data: { password }
+    });
+
+    // Send completion update
+    if (response.data.success) {
+      sendInstallationUpdate({
+        toolId: toolId,
+        status: 'completed',
+        progress: 100,
+        message: `✓ Successfully uninstalled ${response.data.tool?.name || 'tool'}`,
+      });
+    } else {
+      sendInstallationUpdate({
+        toolId: toolId,
+        status: 'failed',
+        progress: 100,
+        message: `✗ Failed to uninstall: ${response.data.error}`,
+      });
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Failed to uninstall tool:', error);
+    
+    sendInstallationUpdate({
+      toolId: toolId,
+      status: 'failed',
+      progress: 100,
+      message: `✗ Uninstall error: ${error.message}`,
+    });
+
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+});
+
+/**
  * Send installation update to renderer
  */
 function sendInstallationUpdate(data) {

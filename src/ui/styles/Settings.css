@@ -31,10 +31,30 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.settings-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
 .settings-section h2 {
   font-size: 20px;
-  margin-bottom: 20px;
   color: #1f2937;
+  margin: 0;
+}
+
+.save-status {
+  font-size: 14px;
+  color: #059669;
+  font-weight: 500;
+}
+
+/* For sections without section-header */
+.settings-section > h2:not(.section-header h2) {
+  margin-bottom: 20px;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 12px;
 }
@@ -87,8 +107,20 @@
   gap: 12px;
   cursor: pointer;
   font-size: 15px;
-  color: #374151;
+  color: #374151;  font-weight: 500;
 }
+
+.setting-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.setting-description {
+  margin: 8px 0 0 32px;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: normal;}
 
 .setting-item input[type="checkbox"] {
   width: 18px;

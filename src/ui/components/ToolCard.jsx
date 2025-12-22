@@ -1,10 +1,17 @@
 import React from 'react';
 import '../styles/ToolCard.css';
 
-function ToolCard({ tool, selected, onToggle, disabled }) {
+function ToolCard({ tool, selected, onToggle, disabled, onUninstall }) {
   const handleClick = () => {
-    if (!disabled) {
+    if (!disabled && !tool.installed) {
       onToggle(tool.id);
+    }
+  };
+
+  const handleUninstall = (e) => {
+    e.stopPropagation();
+    if (onUninstall) {
+      onUninstall(tool.id);
     }
   };
 
@@ -14,13 +21,23 @@ function ToolCard({ tool, selected, onToggle, disabled }) {
       onClick={handleClick}
     >
       <div className="tool-card-header">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={handleClick}
-          disabled={disabled}
-          className="tool-checkbox"
-        />
+        {!tool.installed ? (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={handleClick}
+            disabled={disabled}
+            className="tool-checkbox"
+          />
+        ) : (
+          <button
+            className="uninstall-button"
+            onClick={handleUninstall}
+            disabled={disabled}
+          >
+            Uninstall
+          </button>
+        )}
         <h3 className="tool-name">{tool.name}</h3>
         {tool.installed && <span className="installed-badge">✓ Installed</span>}
       </div>

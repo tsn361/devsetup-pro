@@ -2,13 +2,53 @@ import React, { useState, useEffect } from 'react';
 import IPCService from '../services/ipc';
 import '../styles/Settings.css';
 
+const SETTINGS_KEY = 'devsetup_settings';
+
+const defaultSettings = {
+  showLogsRealtime: true,
+  autoScrollLogs: true,
+  checkUpdatesAuto: false,
+  showSystemWarnings: true,
+};
+
 function Settings() {
   const [systemInfo, setSystemInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState(defaultSettings);
+  const [saveStatus, setSaveStatus] = useState('');
 
   useEffect(() => {
     loadSystemInfo();
+    loadSettings();
   }, []);
+
+  const loadSettings = () => {
+    try {
+      const saved = localStorage.getItem(SETTINGS_KEY);
+      if (saved) {
+        setSettings({ ...defaultSettings, ...JSON.parse(saved) });
+      }
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    }
+  };
+
+  const saveSettings = (newSettings) => {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
+      setSettings(newSettings);
+      setSaveStatus('Saved!');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setSaveStatus('Failed to save');
+    }
+  };
+
+  const handleSettingChange = (key) => {
+    const newSettings = { ...settings, [key]: !settings[key] };
+    saveSettings(newSettings);
+  };
 
   const loadSystemInfo = async () => {
     try {
@@ -82,52 +122,58 @@ function Settings() {
 
         {/* Application Settings */}
         <section className="settings-section">
-          <h2>Application Settings</h2>
+          <div className="section-header">
+            <h2>Application Settings</h2>
+            {saveStatus && <span className="save-status">{saveStatus}</span>}
+          </div>
           
           <div className="settings-group">
             <div className="setting-item">
               <label>
-                <input type="checkbox" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  checked={settings.showLogsRealtime}
+                  onChange={() => handleSettingChange('showLogsRealtime')}
+                />
                 Show installation logs in real-time
               </label>
+              <p className="setting-description">Display command output as it happens during installation</p>
             </div>
             
             <div className="setting-item">
               <label>
-                <input type="checkbox" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  checked={settings.autoScrollLogs}
+                  onChange={() => handleSettingChange('autoScrollLogs')}
+                />
                 Auto-scroll logs during installation
               </label>
+              <p className="setting-description">Automatically scroll to latest log entries</p>
             </div>
             
             <div className="setting-item">
               <label>
-                <input type="checkbox" />
+                <input 
+                  type="checkbox"
+                  checked={settings.checkUpdatesAuto}
+                  onChange={() => handleSettingChange('checkUpdatesAuto')}
+                />
                 Check for updates automatically
               </label>
-            </div>
-            
-            <div className="setting-item">
-              <label>
-                <input type="checkbox" defaultChecked />
-                Show system warnings
-              </label>
-            </div>
-          </div>
-        </section>
-
-        {/* About */}
-        <section className="settings-section">
-          <h2>About DevSetup Pro</h2>
-          
-          <div className="about-info">
-            <p><strong>Version:</strong> 0.1.0 (MVP)</p>
-            <p><strong>Description:</strong> Ubuntu Developer Tool Installer</p>
-            <p><strong>License:</strong> MIT</p>
+              <p className="setting-description">Check for new versions on startup</p>
+            </div>Business Source License 1.1</p>
             
             <div className="about-links">
-              <button className="btn-link">View Documentation</button>
-              <button className="btn-link">Report an Issue</button>
-              <button className="btn-link">Check for Updates</button>
+              <button className="btn-link" onClick={() => alert('Documentation: See README.md and docs/ folder in the project')}>
+                View Documentation
+              </button>
+              <button className="btn-link" onClick={() => alert('To report an issue, please create a GitHub issue in your repository')}>
+                Report an Issue
+              </button>
+              <button className="btn-link" onClick={() => alert('You are running version 0.1.0 (MVP)\n\nThis is a development build.')}>
+                Check for Updates
+              </button>
             </div>
           </div>
         </section>
@@ -137,8 +183,28 @@ function Settings() {
           <h2>Danger Zone</h2>
           
           <div className="danger-actions">
-            <button className="btn-danger">Clear All Profiles</button>
-            <button className="btn-danger">Reset to Defaults</button>
+            <button 
+              className="btn-danger"
+              onClick={async () => {
+                if (window.confirm('This will delete all saved profiles. Are you sure?')) {
+                  // TODO: Implement clear profiles
+                  alert('Clear profiles feature coming soon');
+                }
+              }}
+            >
+              Clear All Profiles
+            </button>
+            <button 
+              className="btn-danger"
+              onClick={() => {
+                if (window.confirm('Reset all settings to defaults?')) {
+                  saveSettings(defaultSettings);
+                  alert('Settings reset to defaults');
+                }
+              }}
+            >
+              Reset to Defaults
+            </button>
           </div>
         </section>
       </div>
