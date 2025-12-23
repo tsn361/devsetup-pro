@@ -7,6 +7,7 @@ const PackageManager = require('./lib/package-manager');
 const PrivilegeManager = require('./lib/privilege-manager');
 const DependencyResolver = require('./lib/dependency-resolver');
 const ProfileManager = require('./lib/profile-manager');
+const ConfigManager = require('./lib/config-manager');
 
 const app = express();
 let server;
@@ -42,14 +43,28 @@ app.get('/api/tools', async (req, res) => {
       await loadToolsConfig();
     }
 
+    // Get distro info
+    const distro = await PackageManager.getDistroInfo();
+
     // Check which tools are already installed
     const allTools = toolsConfig.categories.flatMap((cat) => cat.tools);
     const toolsWithStatus = await Promise.all(
       allTools.map(async (tool) => {
-        const isInstalled = await PackageManager.isInstalled(tool.package);
+        let packageName = tool.package;
+        if (tool.package_overrides && tool.package_overrides[distro.version]) {
+          packageName = tool.package_overrides[distro.version];
+        }
+        const isInstalled = await PackageManager.isInstalled(packageName);
+        
+        let details = null;
+        if (isInstalled) {
+          details = await PackageManager.getToolDetails(tool.id);
+        }
+
         return {
           ...tool,
           installed: isInstalled,
+          details,
         };
       })
     );
@@ -96,7 +111,15 @@ app.get('/api/tools/:id', async (req, res) => {
       });
     }
 
-    const isInstalled = await PackageManager.isInstalled(tool.package);
+    // Get distro info
+    const distro = await PackageManager.getDistroInfo();
+    
+    let packageName = tool.package;
+    if (tool.package_overrides && tool.package_overrides[distro.version]) {
+      packageName = tool.package_overrides[distro.version];
+    }
+
+    const isInstalled = await PackageManager.isInstalled(packageName);
 
     res.json({
       success: true,
@@ -207,7 +230,8 @@ app.get('/api/system/check', async (req, res) => {
 
     // Check disk space (require at least 1GB free)
     try {
-      const { stdout } = await execAsync(wrapCommand("df / | tail -1 | awk '{print $4}'"));
+      // Use -P to prevent line wrapping, ensuring awk gets the right column
+      const { stdout } = await execAsync(wrapCommand("df -P / | tail -1 | awk '{print $4}'"));
       const freeSpaceKB = parseInt(stdout.trim());
       checks.diskSpace = freeSpaceKB > 1048576; // 1GB in KB
       checks.freeSpaceGB = (freeSpaceKB / 1048576).toFixed(2);
@@ -223,12 +247,19 @@ app.get('/api/system/check', async (req, res) => {
       checks.sudo = false;
     }
 
-    const allPassed = Object.values(checks).every((check) => check === true);
+    // Get distro info
+    const distro = await PackageManager.getDistroInfo();
+
+    const allPassed = Object.values(checks).every((check) => check === true || typeof check === 'string' || typeof check === 'number');
 
     res.json({
       success: true,
       allPassed,
       checks,
+      platform: os.platform(),
+      distro: distro.name,
+      distroVersion: distro.version,
+      diskSpace: checks.freeSpaceGB ? `${checks.freeSpaceGB} GB free` : null,
     });
   } catch (error) {
     console.error('Error running system check:', error);
@@ -336,9 +367,19 @@ app.post('/api/install', async (req, res) => {
     // For now, we'll do it synchronously and return result
     const results = [];
 
+    // Get distro info for package resolution
+    const distro = await PackageManager.getDistroInfo();
+
     for (const tool of installOrder) {
       try {
         console.log(`Installing ${tool.name}...`);
+
+        // Resolve package name based on distro version
+        let packageName = tool.package;
+        if (tool.package_overrides && tool.package_overrides[distro.version]) {
+          packageName = tool.package_overrides[distro.version];
+          console.log(`Using override package for ${distro.version}: ${packageName}`);
+        }
 
         // Send update to renderer (via main process)
         const mainProcess = require('./main');
@@ -351,7 +392,7 @@ app.post('/api/install', async (req, res) => {
           });
         }
 
-        const result = await PackageManager.install(tool.package, password);
+        const result = await PackageManager.install(packageName, password);
 
         // Run post-install command if exists
         if (result.success && tool.postInstall) {
@@ -512,21 +553,30 @@ app.delete('/api/tools/:id', async (req, res) => {
       });
     }
 
+    // Get distro info
+    const distro = await PackageManager.getDistroInfo();
+    
+    // Resolve package name
+    let packageName = tool.package;
+    if (tool.package_overrides && tool.package_overrides[distro.version]) {
+      packageName = tool.package_overrides[distro.version];
+    }
+
     // Check if tool is installed
-    const isInstalled = await PackageManager.isInstalled(tool.package);
+    const isInstalled = await PackageManager.isInstalled(packageName);
     if (!isInstalled) {
-      console.log(`Tool ${tool.name} (${tool.package}) is not installed`);
+      console.log(`Tool ${tool.name} (${packageName}) is not installed`);
       return res.status(400).json({
         success: false,
         error: 'Tool is not installed',
       });
     }
 
-    console.log(`Starting uninstall of ${tool.name} (${tool.package})...`);
-    console.log(`Command: apt-get remove -y ${tool.package}`);
+    console.log(`Starting uninstall of ${tool.name} (${packageName})...`);
+    console.log(`Command: apt-get remove -y ${packageName}`);
 
     // Uninstall the package
-    const result = await PackageManager.uninstall(tool.package, password);
+    const result = await PackageManager.uninstall(packageName, password);
 
     if (result.success) {
       console.log(`✓ Successfully uninstalled ${tool.name}`);
@@ -539,6 +589,7 @@ app.delete('/api/tools/:id', async (req, res) => {
     res.json({
       success: result.success,
       message: result.message,
+      error: result.error,
       output: result.output,
       tool: {
         id: tool.id,
@@ -555,6 +606,125 @@ app.delete('/api/tools/:id', async (req, res) => {
 });
 
 /**
+ * GET /api/tools/:id/extras - Get tool extras with status
+ */
+app.get('/api/tools/:id/extras', async (req, res) => {
+  try {
+    if (!toolsConfig) {
+      await loadToolsConfig();
+    }
+
+    const tool = toolsConfig.categories
+      .flatMap((cat) => cat.tools)
+      .find((t) => t.id === req.params.id);
+
+    if (!tool) {
+      return res.status(404).json({
+        success: false,
+        error: 'Tool not found',
+      });
+    }
+
+    if (!tool.extras) {
+      return res.json({
+        success: true,
+        extras: [],
+      });
+    }
+
+    // Get distro info for overrides
+    const distro = await PackageManager.getDistroInfo();
+
+    const extrasWithStatus = await Promise.all(
+      tool.extras.map(async (extra) => {
+        // Handle package overrides for extras if needed (though usually they follow the main package versioning)
+        // For PHP, it's tricky because php-xml might need to be php8.1-xml
+        // We can try to infer it from the main package override or just check generic
+        
+        let packageName = extra.package;
+        
+        // Simple heuristic: if the main tool has an override like "php8.1", 
+        // try to adapt the extra package "php-xml" -> "php8.1-xml"
+        if (tool.package_overrides && tool.package_overrides[distro.version]) {
+          const mainPackage = tool.package_overrides[distro.version];
+          // If main package is like "php8.1", and extra is "php-xml"
+          if (mainPackage.match(/^php\d+\.\d+$/) && extra.package.startsWith('php-')) {
+            packageName = extra.package.replace('php-', `${mainPackage}-`);
+          }
+        }
+
+        const isInstalled = await PackageManager.isInstalled(packageName);
+        return {
+          ...extra,
+          resolvedPackage: packageName,
+          installed: isInstalled,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      extras: extrasWithStatus,
+    });
+  } catch (error) {
+    console.error('Error getting tool extras:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * POST /api/tools/:id/manage-extras - Install/Uninstall extras
+ */
+app.post('/api/tools/:id/manage-extras', async (req, res) => {
+  try {
+    const { password, install = [], remove = [] } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ success: false, error: 'Password required' });
+    }
+
+    // Verify password
+    const isValidPassword = await PrivilegeManager.verifyPassword(password);
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, error: 'Invalid password' });
+    }
+
+    const results = [];
+
+    // Handle removals
+    for (const pkg of remove) {
+      try {
+        const result = await PackageManager.uninstall(pkg, password);
+        results.push({ package: pkg, action: 'remove', success: result.success, message: result.message });
+      } catch (e) {
+        results.push({ package: pkg, action: 'remove', success: false, message: e.message });
+      }
+    }
+
+    // Handle installations
+    for (const pkg of install) {
+      try {
+        const result = await PackageManager.install(pkg, password);
+        results.push({ package: pkg, action: 'install', success: result.success, message: result.message });
+      } catch (e) {
+        results.push({ package: pkg, action: 'install', success: false, message: e.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      results,
+    });
+  } catch (error) {
+    console.error('Error managing extras:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
  * Health check endpoint
  */
 app.get('/health', (req, res) => {
@@ -567,6 +737,119 @@ app.get('/health', (req, res) => {
 // ============================================================================
 // Server Management
 // ============================================================================
+
+/**
+ * GET /api/tools/:id/configs - List configs
+ */
+app.get('/api/tools/:id/configs', async (req, res) => {
+  try {
+    if (!toolsConfig) await loadToolsConfig();
+    
+    const tool = toolsConfig.categories
+      .flatMap(cat => cat.tools)
+      .find(t => t.id === req.params.id);
+
+    if (!tool || !tool.configManagement) {
+      return res.status(404).json({ success: false, error: 'Config management not supported' });
+    }
+
+    const configs = await ConfigManager.listConfigs(tool.configManagement);
+    res.json({ success: true, configs });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/tools/:id/configs/:name - Get config content
+ */
+app.get('/api/tools/:id/configs/:name', async (req, res) => {
+  try {
+    if (!toolsConfig) await loadToolsConfig();
+    
+    const tool = toolsConfig.categories
+      .flatMap(cat => cat.tools)
+      .find(t => t.id === req.params.id);
+
+    if (!tool || !tool.configManagement) {
+      return res.status(404).json({ success: false, error: 'Config management not supported' });
+    }
+
+    const content = await ConfigManager.getConfigContent(tool.configManagement, req.params.name);
+    res.json({ success: true, content });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/tools/:id/configs - Save/Create config
+ */
+app.post('/api/tools/:id/configs', async (req, res) => {
+  try {
+    const { name, content, password } = req.body;
+    if (!toolsConfig) await loadToolsConfig();
+    
+    const tool = toolsConfig.categories
+      .flatMap(cat => cat.tools)
+      .find(t => t.id === req.params.id);
+
+    if (!tool || !tool.configManagement) {
+      return res.status(404).json({ success: false, error: 'Config management not supported' });
+    }
+
+    await ConfigManager.saveConfig(tool.configManagement, name, content, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/tools/:id/configs/:name/toggle - Enable/Disable config
+ */
+app.post('/api/tools/:id/configs/:name/toggle', async (req, res) => {
+  try {
+    const { enable, password } = req.body;
+    if (!toolsConfig) await loadToolsConfig();
+    
+    const tool = toolsConfig.categories
+      .flatMap(cat => cat.tools)
+      .find(t => t.id === req.params.id);
+
+    if (!tool || !tool.configManagement) {
+      return res.status(404).json({ success: false, error: 'Config management not supported' });
+    }
+
+    await ConfigManager.toggleConfig(tool.configManagement, req.params.name, enable, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * DELETE /api/tools/:id/configs/:name - Delete config
+ */
+app.delete('/api/tools/:id/configs/:name', async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!toolsConfig) await loadToolsConfig();
+    
+    const tool = toolsConfig.categories
+      .flatMap(cat => cat.tools)
+      .find(t => t.id === req.params.id);
+
+    if (!tool || !tool.configManagement) {
+      return res.status(404).json({ success: false, error: 'Config management not supported' });
+    }
+
+    await ConfigManager.deleteConfig(tool.configManagement, req.params.name, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 /**
  * Start the Express server

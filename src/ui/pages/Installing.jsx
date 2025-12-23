@@ -14,6 +14,7 @@ function Installing() {
   const [logs, setLogs] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const [results, setResults] = useState(null);
+  const hasStartedRef = React.useRef(false);
 
   const { tools, password, mode = 'install', toolName } = location.state || {};
 
@@ -38,11 +39,14 @@ function Installing() {
       }
     });
 
-    // Start installation or uninstallation
-    if (mode === 'uninstall') {
-      startUninstallation();
-    } else {
-      startInstallation();
+    // Start installation or uninstallation only once
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true;
+      if (mode === 'uninstall') {
+        startUninstallation();
+      } else {
+        startInstallation();
+      }
     }
 
     // Cleanup

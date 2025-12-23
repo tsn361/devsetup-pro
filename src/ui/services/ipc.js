@@ -131,6 +131,58 @@ class IPCService {
   }
 
   /**
+   * Get tool extras
+   */
+  static async getToolExtras(toolId) {
+    try {
+      if (!ipcRenderer) return { success: false, extras: [] };
+      return await ipcRenderer.invoke('get-tool-extras', toolId);
+    } catch (error) {
+      console.error('Error getting tool extras:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Manage tool extras
+   */
+  static async manageToolExtras(toolId, data) {
+    try {
+      if (!ipcRenderer) return { success: false };
+      return await ipcRenderer.invoke('manage-tool-extras', { toolId, ...data });
+    } catch (error) {
+      console.error('Error managing tool extras:', error);
+      throw error;
+    }
+  }
+
+  // Config Management
+  static async getConfigs(toolId) {
+    if (!ipcRenderer) return { success: false, configs: [] };
+    return await ipcRenderer.invoke('get-configs', toolId);
+  }
+
+  static async getConfigContent(toolId, name) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('get-config-content', { toolId, name });
+  }
+
+  static async saveConfig(toolId, name, content, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('save-config', { toolId, name, content, password });
+  }
+
+  static async toggleConfig(toolId, name, enable, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('toggle-config', { toolId, name, enable, password });
+  }
+
+  static async deleteConfig(toolId, name, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('delete-config', { toolId, name, password });
+  }
+
+  /**
    * Listen for installation updates
    */
   static onInstallationUpdate(callback) {

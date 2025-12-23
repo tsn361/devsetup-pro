@@ -4,7 +4,11 @@
   "description": "A modern GUI tool for installing developer tools on Ubuntu",
   "main": "src/main/main.js",
   "homepage": "./",
-  "author": "DevSetup Team",
+  "author": "DevSetup Team <info@devsetup.pro>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_GITHUB_USERNAME/devsetup-pro-public.git"
+  },
   "license": "MIT",
   "scripts": {
     "start": "react-scripts start",
@@ -21,6 +25,7 @@
     "release": "electron-builder --linux --publish always"
   },
   "dependencies": {
+    "electron-updater": "^6.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.0",

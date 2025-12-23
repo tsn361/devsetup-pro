@@ -162,7 +162,8 @@ function Settings() {
                 Check for updates automatically
               </label>
               <p className="setting-description">Check for new versions on startup</p>
-            </div>Business Source License 1.1</p>
+            </div>
+            <p>Business Source License 1.1</p>
             
             <div className="about-links">
               <button className="btn-link" onClick={() => alert('Documentation: See README.md and docs/ folder in the project')}>

@@ -166,7 +166,13 @@ function Dashboard() {
 
   const handleUninstallSubmit = async (password) => {
     setShowUninstallDialog(false);
-setError('Invalid sudo password. Please try again.');
+
+    // Verify password first
+    try {
+      const verifyResponse = await IPCService.verifySudo(password);
+      
+      if (!verifyResponse.success || !verifyResponse.valid) {
+        setError('Invalid sudo password. Please try again.');
         setTimeout(() => setError(null), 5000);
         setToolToUninstall(null);
         return;
@@ -189,14 +195,7 @@ setError('Invalid sudo password. Please try again.');
     } catch (err) {
       console.error('Password verification failed:', err);
       setError('Failed to verify password. Please try again.');
-      setTimeout(() => setError(null), 5000
-          password: password,
-          mode: 'uninstall',
-        },
-      });
-    } catch (err) {
-      console.error('Password verification failed:', err);
-      alert('Failed to verify password. Please try again.');
+      setTimeout(() => setError(null), 5000);
       setToolToUninstall(null);
     }
   };

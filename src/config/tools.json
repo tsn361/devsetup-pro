@@ -18,7 +18,13 @@
           "size": "1.5MB",
           "postInstall": "sudo systemctl enable nginx",
           "checkCommand": "nginx -v",
-          "website": "https://nginx.org"
+          "website": "https://nginx.org",
+          "configManagement": {
+            "type": "nginx",
+            "availablePath": "/etc/nginx/sites-available",
+            "enabledPath": "/etc/nginx/sites-enabled",
+            "serviceName": "nginx"
+          }
         },
         {
           "id": "apache2",
@@ -31,7 +37,13 @@
           "size": "2.1MB",
           "postInstall": "sudo systemctl enable apache2",
           "checkCommand": "apache2 -v",
-          "website": "https://httpd.apache.org/"
+          "website": "https://httpd.apache.org/",
+          "configManagement": {
+            "type": "apache",
+            "availablePath": "/etc/apache2/sites-available",
+            "enabledPath": "/etc/apache2/sites-enabled",
+            "serviceName": "apache2"
+          }
         }
       ]
     },
@@ -164,7 +176,20 @@
           "size": "40MB",
           "postInstall": "",
           "checkCommand": "php --version",
-          "website": "https://www.php.net/"
+          "website": "https://www.php.net/",
+          "extras": [
+            { "id": "php-xml", "name": "XML", "package": "php-xml", "description": "XML manipulation" },
+            { "id": "php-zip", "name": "Zip", "package": "php-zip", "description": "Zip file handling" },
+            { "id": "php-gd", "name": "GD", "package": "php-gd", "description": "Image processing" },
+            { "id": "php-curl", "name": "cURL", "package": "php-curl", "description": "Data transfer library" },
+            { "id": "php-mbstring", "name": "MBString", "package": "php-mbstring", "description": "Multi-byte string support" },
+            { "id": "php-mysql", "name": "MySQL", "package": "php-mysql", "description": "MySQL driver" },
+            { "id": "php-pgsql", "name": "PostgreSQL", "package": "php-pgsql", "description": "PostgreSQL driver" },
+            { "id": "php-sqlite3", "name": "SQLite3", "package": "php-sqlite3", "description": "SQLite3 driver" },
+            { "id": "php-bcmath", "name": "BCMath", "package": "php-bcmath", "description": "Arbitrary precision mathematics" },
+            { "id": "php-intl", "name": "Intl", "package": "php-intl", "description": "Internationalization functions" },
+            { "id": "php-soap", "name": "SOAP", "package": "php-soap", "description": "SOAP protocol support" }
+          ]
         },
         {
           "id": "java",
@@ -178,6 +203,19 @@
           "postInstall": "",
           "checkCommand": "java --version",
           "website": "https://openjdk.org/"
+        },
+        {
+          "id": "rust",
+          "name": "Rust",
+          "description": "Systems programming language",
+          "package": "rustc cargo",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "150MB",
+          "postInstall": "",
+          "checkCommand": "rustc --version",
+          "website": "https://www.rust-lang.org/"
         }
       ]
     },
@@ -290,6 +328,79 @@
           "postInstall": "",
           "checkCommand": "tmux -V",
           "website": "https://github.com/tmux/tmux"
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "name": "System Utilities",
+      "icon": "terminal",
+      "description": "Useful command-line utilities",
+      "tools": [
+        {
+          "id": "zsh",
+          "name": "Zsh",
+          "description": "Extended Bourne shell",
+          "package": "zsh",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "5MB",
+          "postInstall": "",
+          "checkCommand": "zsh --version",
+          "website": "https://www.zsh.org/"
+        },
+        {
+          "id": "jq",
+          "name": "JQ",
+          "description": "Command-line JSON processor",
+          "package": "jq",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "1MB",
+          "postInstall": "",
+          "checkCommand": "jq --version",
+          "website": "https://stedolan.github.io/jq/"
+        },
+        {
+          "id": "tree",
+          "name": "Tree",
+          "description": "Recursive directory listing command",
+          "package": "tree",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "100KB",
+          "postInstall": "",
+          "checkCommand": "tree --version",
+          "website": "http://mama.indstate.edu/users/ice/tree/"
+        },
+        {
+          "id": "neofetch",
+          "name": "Neofetch",
+          "description": "System information tool",
+          "package": "neofetch",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "500KB",
+          "postInstall": "",
+          "checkCommand": "neofetch --version",
+          "website": "https://github.com/dylanaraps/neofetch"
+        },
+        {
+          "id": "zip-unzip",
+          "name": "Zip/Unzip",
+          "description": "Compression utilities",
+          "package": "zip unzip",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "1MB",
+          "postInstall": "",
+          "checkCommand": "unzip -v",
+          "website": "https://infozip.sourceforge.net/"
         }
       ]
     }

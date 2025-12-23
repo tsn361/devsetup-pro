@@ -18,6 +18,34 @@ class PackageManager {
   }
 
   /**
+   * Get Linux distribution information
+   * @returns {Promise<Object>} - Distro info { id, version, name }
+   */
+  static async getDistroInfo() {
+    try {
+      const command = this.wrapCommand('cat /etc/os-release');
+      const { stdout } = await execAsync(command);
+      
+      const info = {};
+      stdout.split('\n').forEach(line => {
+        const [key, value] = line.split('=');
+        if (key && value) {
+          info[key] = value.replace(/"/g, '');
+        }
+      });
+      
+      return {
+        id: info.ID || 'unknown',
+        version: info.VERSION_ID || 'unknown',
+        name: info.PRETTY_NAME || 'Unknown Linux'
+      };
+    } catch (error) {
+      console.error('Error getting distro info:', error);
+      return { id: 'unknown', version: 'unknown', name: 'Unknown' };
+    }
+  }
+
+  /**
    * Check if a package is installed
    * @param {string} packageName - Name of the package (can include multiple packages separated by space)
    * @returns {Promise<boolean>} - True if installed, false otherwise
@@ -28,7 +56,8 @@ class PackageManager {
       const packages = packageName.split(' ').filter((p) => p.trim());
 
       for (const pkg of packages) {
-        const command = this.wrapCommand(`dpkg -l | grep -E "^ii\\\\s+${pkg}\\\\s"`);
+        // Use [[:space:]] instead of \s for better compatibility
+        const command = this.wrapCommand(`dpkg -l | grep -E "^ii[[:space:]]+${pkg}[[:space:]]"`);
         const { stdout } = await execAsync(command);
         if (!stdout.trim()) {
           return false;
@@ -255,6 +284,32 @@ class PackageManager {
         success: false,
         error: error.message,
       };
+    }
+  }
+
+  /**
+   * Get additional details for a tool (e.g. installed modules)
+   * @param {string} toolId - The ID of the tool
+   * @returns {Promise<Object|null>} - Details object or null
+   */
+  static async getToolDetails(toolId) {
+    try {
+      if (toolId === 'php') {
+        const command = this.wrapCommand('php -m');
+        const { stdout } = await execAsync(command);
+        // Filter out [PHP Modules] and [Zend Modules] headers and empty lines
+        const modules = stdout.split('\n')
+          .map(line => line.trim())
+          .filter(line => line && !line.startsWith('['));
+        
+        return {
+          modules: modules
+        };
+      }
+      return null;
+    } catch (error) {
+      // Command might fail if tool is not fully installed or in path
+      return null;
     }
   }
 

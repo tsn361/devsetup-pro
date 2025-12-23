@@ -6,12 +6,38 @@
 }
 
 .log-header {
-  padding: 16px 20px;
+  padding: 12px 20px;
   background-color: #1f2937;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.log-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-small {
+  padding: 4px 12px;
+  font-size: 12px;
+  background-color: #374151;
+  color: white;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-small:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .log-header h3 {

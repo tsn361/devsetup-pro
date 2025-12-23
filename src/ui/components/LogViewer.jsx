@@ -23,11 +23,25 @@ function LogViewer({ logs, autoScroll = true }) {
     return 'log-info';
   };
 
+  const handleCopyLogs = () => {
+    const logText = logs.join('\n');
+    navigator.clipboard.writeText(logText).then(() => {
+      alert('Logs copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy logs:', err);
+    });
+  };
+
   return (
     <div className="log-viewer">
       <div className="log-header">
         <h3>Installation Logs</h3>
-        <span className="log-count">{logs.length} entries</span>
+        <div className="log-actions">
+          <span className="log-count">{logs.length} entries</span>
+          <button onClick={handleCopyLogs} className="btn-small" disabled={logs.length === 0}>
+            Copy Logs
+          </button>
+        </div>
       </div>
       
       <div className="log-content">

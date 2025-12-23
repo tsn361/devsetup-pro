@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -36,6 +37,9 @@ function createWindow() {
   // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    if (!isDev) {
+      autoUpdater.checkForUpdatesAndNotify();
+    }
   });
 
   // Open DevTools in development
@@ -299,6 +303,89 @@ ipcMain.handle('uninstall-tool', async (event, { toolId, password }) => {
       success: false,
       error: error.response?.data?.error || error.message,
     };
+  }
+});
+
+ipcMain.handle('get-tool-extras', async (event, toolId) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/extras`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get tool extras:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('manage-tool-extras', async (event, { toolId, password, install, remove }) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/manage-extras`, {
+      password,
+      install,
+      remove
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to manage tool extras:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Config Management Handlers
+ipcMain.handle('get-configs', async (event, toolId) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/configs`);
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-config-content', async (event, { toolId, name }) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/configs/${name}`);
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('save-config', async (event, { toolId, name, content, password }) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/configs`, {
+      name, content, password
+    });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('toggle-config', async (event, { toolId, name, enable, password }) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/configs/${name}/toggle`, {
+      enable, password
+    });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('delete-config', async (event, { toolId, name, password }) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.delete(`http://localhost:3001/api/tools/${toolId}/configs/${name}`, {
+      data: { password }
+    });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 });
 
