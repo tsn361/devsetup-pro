@@ -9,5 +9,8 @@
  * Change Date: 2029-12-21
  * Change License: Apache License 2.0
  * 
- * For commercial licensing inquiries: business@devsetup.pro
+ * Support: support@devsetup.pro
+ * Security: security@devsetup.pro
+ * Licensing: license@devsetup.pro
+ * Business: business@devsetup.pro
  */

@@ -11,6 +11,10 @@
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
+**Support:** See SUPPORT.md
+
+**Security:** See SECURITY.md
+
 ## Download
 
 Get the latest installers from GitHub Releases:
