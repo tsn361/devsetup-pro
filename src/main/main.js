@@ -9,6 +9,10 @@ let expressServer;
 // Import the Express server
 const { startServer, stopServer } = require('./server');
 
+// Basic validators for IPC payloads
+const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
+const isStringArray = (arr) => Array.isArray(arr) && arr.every((v) => isNonEmptyString(v));
+
 /**
  * Create the main application window
  */
@@ -19,9 +23,10 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
     icon: path.join(__dirname, '../assets/icon.png'),
     show: false, // Don't show until ready
@@ -107,6 +112,9 @@ app.on('before-quit', async () => {
  */
 ipcMain.handle('install-tools', async (event, { tools, password }) => {
   try {
+    if (!isStringArray(tools) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     // Forward to Express API
     const axios = require('axios');
     const response = await axios.post('http://localhost:3001/api/install', {
@@ -129,6 +137,9 @@ ipcMain.handle('install-tools', async (event, { tools, password }) => {
  */
 ipcMain.handle('verify-sudo', async (event, password) => {
   try {
+    if (!isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid password' };
+    }
     const axios = require('axios');
     const response = await axios.post('http://localhost:3001/api/verify-sudo', {
       password,
@@ -216,6 +227,9 @@ ipcMain.handle('get-profiles', async () => {
  */
 ipcMain.handle('save-profile', async (event, profile) => {
   try {
+    if (!profile || !isNonEmptyString(profile.name) || !isStringArray(profile.tools || [])) {
+      return { success: false, error: 'Invalid profile payload' };
+    }
     const axios = require('axios');
     const response = await axios.post('http://localhost:3001/api/profiles', profile);
     return response.data;
@@ -233,6 +247,9 @@ ipcMain.handle('save-profile', async (event, profile) => {
  */
 ipcMain.handle('delete-profile', async (event, profileId) => {
   try {
+    if (!isNonEmptyString(profileId)) {
+      return { success: false, error: 'Invalid profile id' };
+    }
     const axios = require('axios');
     const response = await axios.delete(`http://localhost:3001/api/profiles/${profileId}`);
     return response.data;
@@ -250,6 +267,9 @@ ipcMain.handle('delete-profile', async (event, profileId) => {
  */
 ipcMain.handle('uninstall-tool', async (event, { toolId, password }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     // Send initial update
     sendInstallationUpdate({
       toolId: toolId,
@@ -308,6 +328,7 @@ ipcMain.handle('uninstall-tool', async (event, { toolId, password }) => {
 
 ipcMain.handle('get-tool-extras', async (event, toolId) => {
   try {
+    if (!isNonEmptyString(toolId)) return { success: false, error: 'Invalid tool id' };
     const axios = require('axios');
     const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/extras`);
     return response.data;
@@ -319,6 +340,9 @@ ipcMain.handle('get-tool-extras', async (event, toolId) => {
 
 ipcMain.handle('manage-tool-extras', async (event, { toolId, password, install, remove }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     const axios = require('axios');
     const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/manage-extras`, {
       password,
@@ -335,6 +359,7 @@ ipcMain.handle('manage-tool-extras', async (event, { toolId, password, install, 
 // Config Management Handlers
 ipcMain.handle('get-configs', async (event, toolId) => {
   try {
+    if (!isNonEmptyString(toolId)) return { success: false, error: 'Invalid tool id' };
     const axios = require('axios');
     const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/configs`);
     return response.data;
@@ -345,6 +370,9 @@ ipcMain.handle('get-configs', async (event, toolId) => {
 
 ipcMain.handle('get-config-content', async (event, { toolId, name }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(name)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     const axios = require('axios');
     const response = await axios.get(`http://localhost:3001/api/tools/${toolId}/configs/${name}`);
     return response.data;
@@ -355,6 +383,9 @@ ipcMain.handle('get-config-content', async (event, { toolId, name }) => {
 
 ipcMain.handle('save-config', async (event, { toolId, name, content, password }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(name) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     const axios = require('axios');
     const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/configs`, {
       name, content, password
@@ -367,6 +398,9 @@ ipcMain.handle('save-config', async (event, { toolId, name, content, password })
 
 ipcMain.handle('toggle-config', async (event, { toolId, name, enable, password }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(name) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     const axios = require('axios');
     const response = await axios.post(`http://localhost:3001/api/tools/${toolId}/configs/${name}/toggle`, {
       enable, password
@@ -379,6 +413,9 @@ ipcMain.handle('toggle-config', async (event, { toolId, name, enable, password }
 
 ipcMain.handle('delete-config', async (event, { toolId, name, password }) => {
   try {
+    if (!isNonEmptyString(toolId) || !isNonEmptyString(name) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
     const axios = require('axios');
     const response = await axios.delete(`http://localhost:3001/api/tools/${toolId}/configs/${name}`, {
       data: { password }

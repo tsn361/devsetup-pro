@@ -1,5 +1,6 @@
 const { exec } = require('child_process');
 const { promisify } = require('util');
+const { spawn } = require('child_process');
 const crypto = require('crypto');
 const os = require('os');
 const execAsync = promisify(exec);
@@ -28,39 +29,8 @@ class PrivilegeManager {
       if (!password) {
         return false;
       }
-
-      // Try to run a simple command with sudo to verify password
-      let testCommand;
-      if (os.platform() === 'win32') {
-        // In WSL, use a different approach with sudo
-        testCommand = `wsl bash -c "echo '${password}' | sudo -S whoami 2>/dev/null"`;
-      } else {
-        testCommand = `echo '${password}' | sudo -S echo "test" 2>&1`;
-      }
-
-      const { stdout, stderr } = await execAsync(testCommand, {
-        timeout: 5000, // 5 second timeout
-      });
-
-      // Check for success
-      const output = stdout + stderr;
-
-      // If password is wrong, sudo will output "Sorry, try again"
-      if (output.includes('Sorry, try again') || output.includes('incorrect password')) {
-        return false;
-      }
-
-      // In WSL, successful sudo whoami returns 'root'
-      if (os.platform() === 'win32' && stdout.trim() === 'root') {
-        return true;
-      }
-
-      // If successful, should see "test" in output
-      if (output.includes('test')) {
-        return true;
-      }
-
-      return false;
+      const result = await this.runSudoCommand('echo ok', password, { timeout: 5000 });
+      return result.success;
     } catch (error) {
       console.error('Password verification error:', error);
       return false;
@@ -86,23 +56,8 @@ class PrivilegeManager {
         throw new Error('Invalid sudo password');
       }
 
-      // Execute the command with sudo
-      const sudoCommand = `echo '${password}' | sudo -S ${command}`;
-      const wrappedCommand = this.wrapCommand(sudoCommand);
-
-      const execOptions = {
-        maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-        timeout: options.timeout || 300000, // 5 minute default timeout
-        ...options,
-      };
-
-      const { stdout, stderr } = await execAsync(wrappedCommand, execOptions);
-
-      return {
-        success: true,
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-      };
+      const result = await this.runSudoCommand(command, password, options);
+      return result;
     } catch (error) {
       console.error('Command execution error:', error);
       return {
@@ -127,12 +82,8 @@ class PrivilegeManager {
         return reject(new Error('Password is required'));
       }
 
-      const { spawn } = require('child_process');
-
       // Use sudo -S to read password from stdin
-      const sudoProcess = spawn('sudo', ['-S', 'sh', '-c', command], {
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
+      const sudoProcess = this.spawnSudoProcess(command);
 
       // Send password to sudo
       sudoProcess.stdin.write(`${password}\n`);
@@ -208,6 +159,51 @@ class PrivilegeManager {
 
       return false; // User doesn't have sudo access
     }
+  }
+
+  // Internal: spawn sudo with proper wrapping
+  static spawnSudoProcess(command) {
+    if (os.platform() === 'win32') {
+      return spawn('wsl', ['bash', '-c', `sudo -S sh -c "${command.replace(/"/g, '\\"')}"`], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    }
+    return spawn('sudo', ['-S', 'sh', '-c', command], { stdio: ['pipe', 'pipe', 'pipe'] });
+  }
+
+  // Internal: run sudo command and collect output
+  static runSudoCommand(command, password, options = {}) {
+    return new Promise((resolve, reject) => {
+      const proc = this.spawnSudoProcess(command);
+      let stdout = '';
+      let stderr = '';
+
+      const timeoutMs = options.timeout || 300000;
+      const timer = setTimeout(() => {
+        proc.kill('SIGTERM');
+        resolve({ success: false, error: 'Command timed out', stdout, stderr });
+      }, timeoutMs);
+
+      proc.stdout.on('data', (d) => { stdout += d.toString(); });
+      proc.stderr.on('data', (d) => { stderr += d.toString(); });
+
+      proc.on('close', (code) => {
+        clearTimeout(timer);
+        if (code === 0) {
+          resolve({ success: true, stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code });
+        } else {
+          resolve({ success: false, stdout: stdout.trim(), stderr: stderr.trim(), exitCode: code });
+        }
+      });
+
+      proc.on('error', (err) => {
+        clearTimeout(timer);
+        reject({ success: false, error: err.message });
+      });
+
+      proc.stdin.write(`${password}\n`);
+      proc.stdin.end();
+    });
   }
 
   /**

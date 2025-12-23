@@ -1,13 +1,12 @@
-// Check if running in Electron
-const isElectron = () => {
-  return window && window.process && window.process.type;
-};
+const isElectron = () => typeof window !== 'undefined' && !!window.electronAPI;
 
-let ipcRenderer = null;
-if (isElectron()) {
-  const electron = window.require('electron');
-  ipcRenderer = electron.ipcRenderer;
-}
+const ipcRenderer = isElectron()
+  ? {
+      invoke: (channel, payload) => window.electronAPI.invoke(channel, payload),
+      on: (channel, cb) => window.electronAPI.onInstallationUpdate(cb),
+      removeAllListeners: () => window.electronAPI.removeInstallationUpdateListener(),
+    }
+  : null;
 
 /**
  * IPC Service - Handles communication between React frontend and Electron backend
@@ -187,9 +186,7 @@ class IPCService {
    */
   static onInstallationUpdate(callback) {
     if (ipcRenderer) {
-      ipcRenderer.on('installation-update', (event, data) => {
-        callback(data);
-      });
+      ipcRenderer.on('installation-update', callback);
     }
   }
 
