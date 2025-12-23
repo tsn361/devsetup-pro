@@ -12,6 +12,10 @@ const ConfigManager = require('./lib/config-manager');
 const app = express();
 let server;
 
+// Basic validators (lightweight, non-exhaustive)
+const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
+const isStringArray = (arr) => Array.isArray(arr) && arr.length > 0 && arr.every((v) => isNonEmptyString(v));
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -305,19 +309,11 @@ app.post('/api/verify-sudo', async (req, res) => {
 app.post('/api/install', async (req, res) => {
   try {
     const { tools, password } = req.body;
-
-    if (!tools || !Array.isArray(tools) || tools.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Tools array is required',
-      });
+    if (!isStringArray(tools)) {
+      return res.status(400).json({ success: false, error: 'Tools array is required' });
     }
-
-    if (!password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password is required',
-      });
+    if (!isNonEmptyString(password)) {
+      return res.status(400).json({ success: false, error: 'Password is required' });
     }
 
     // Verify password first
@@ -471,12 +467,8 @@ app.get('/api/profiles', async (req, res) => {
 app.post('/api/profiles', async (req, res) => {
   try {
     const profile = req.body;
-
-    if (!profile.name || !profile.tools) {
-      return res.status(400).json({
-        success: false,
-        error: 'Profile name and tools are required',
-      });
+    if (!profile || !isNonEmptyString(profile.name) || !isStringArray(profile.tools || [])) {
+      return res.status(400).json({ success: false, error: 'Profile name and tools are required' });
     }
 
     const savedProfile = await ProfileManager.save(profile);
@@ -499,6 +491,9 @@ app.post('/api/profiles', async (req, res) => {
  */
 app.delete('/api/profiles/:id', async (req, res) => {
   try {
+    if (!isNonEmptyString(req.params.id)) {
+      return res.status(400).json({ success: false, error: 'Profile id is required' });
+    }
     await ProfileManager.delete(req.params.id);
 
     res.json({
@@ -520,12 +515,8 @@ app.delete('/api/profiles/:id', async (req, res) => {
 app.delete('/api/tools/:id', async (req, res) => {
   try {
     const { password } = req.body;
-
-    if (!password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password is required',
-      });
+    if (!isNonEmptyString(password)) {
+      return res.status(400).json({ success: false, error: 'Password is required' });
     }
 
     // Verify password first
@@ -681,9 +672,11 @@ app.get('/api/tools/:id/extras', async (req, res) => {
 app.post('/api/tools/:id/manage-extras', async (req, res) => {
   try {
     const { password, install = [], remove = [] } = req.body;
-
-    if (!password) {
+    if (!isNonEmptyString(password)) {
       return res.status(400).json({ success: false, error: 'Password required' });
+    }
+    if ((install && !Array.isArray(install)) || (remove && !Array.isArray(remove))) {
+      return res.status(400).json({ success: false, error: 'install/remove must be arrays' });
     }
 
     // Verify password
@@ -788,6 +781,9 @@ app.get('/api/tools/:id/configs/:name', async (req, res) => {
 app.post('/api/tools/:id/configs', async (req, res) => {
   try {
     const { name, content, password } = req.body;
+    if (!isNonEmptyString(name) || !isNonEmptyString(password)) {
+      return res.status(400).json({ success: false, error: 'Name and password are required' });
+    }
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
@@ -811,6 +807,9 @@ app.post('/api/tools/:id/configs', async (req, res) => {
 app.post('/api/tools/:id/configs/:name/toggle', async (req, res) => {
   try {
     const { enable, password } = req.body;
+    if (!isNonEmptyString(password)) {
+      return res.status(400).json({ success: false, error: 'Password is required' });
+    }
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
@@ -834,6 +833,9 @@ app.post('/api/tools/:id/configs/:name/toggle', async (req, res) => {
 app.delete('/api/tools/:id/configs/:name', async (req, res) => {
   try {
     const { password } = req.body;
+    if (!isNonEmptyString(password)) {
+      return res.status(400).json({ success: false, error: 'Password is required' });
+    }
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories

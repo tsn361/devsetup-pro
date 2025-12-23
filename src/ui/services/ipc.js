@@ -3,8 +3,16 @@ const isElectron = () => typeof window !== 'undefined' && !!window.electronAPI;
 const ipcRenderer = isElectron()
   ? {
       invoke: (channel, payload) => window.electronAPI.invoke(channel, payload),
-      on: (channel, cb) => window.electronAPI.onInstallationUpdate(cb),
-      removeAllListeners: () => window.electronAPI.removeInstallationUpdateListener(),
+      on: (channel, cb) => {
+        if (channel === 'installation-update') {
+          window.electronAPI.onInstallationUpdate(cb);
+        }
+      },
+      removeAllListeners: (channel) => {
+        if (!channel || channel === 'installation-update') {
+          window.electronAPI.removeInstallationUpdateListener();
+        }
+      },
     }
   : null;
 
