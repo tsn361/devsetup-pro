@@ -1,6 +1,7 @@
 appId: com.devsetup.pro
 productName: DevSetup Pro
 copyright: Copyright © 2025 DevSetup Team
+extends: null
 
 directories:
   output: dist

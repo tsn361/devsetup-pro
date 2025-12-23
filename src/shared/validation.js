@@ -61,6 +61,46 @@ const deleteConfigSchema = z.object({
   password,
 });
 
+// Schema for validating the entire tools.json configuration
+const toolDefinitionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  package: z.string(),
+  version: z.string(),
+  dependencies: z.array(z.string()).optional(),
+  conflicts: z.array(z.string()).optional(),
+  size: z.string().optional(),
+  postInstall: z.string().optional(),
+  checkCommand: z.string().optional(),
+  website: z.string().optional(),
+  extras: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    package: z.string(),
+    description: z.string().optional()
+  })).optional(),
+  configManagement: z.object({
+    type: z.string(),
+    availablePath: z.string(),
+    enabledPath: z.string(),
+    serviceName: z.string()
+  }).optional()
+});
+
+const categorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  icon: z.string(),
+  description: z.string(),
+  tools: z.array(toolDefinitionSchema)
+});
+
+const toolsConfigSchema = z.object({
+  version: z.string(),
+  categories: z.array(categorySchema)
+});
+
 const schemas = {
   toolId: toolIdOnlySchema,
   install: installSchema,
@@ -73,6 +113,7 @@ const schemas = {
   saveConfig: saveConfigSchema,
   toggleConfig: toggleConfigSchema,
   deleteConfig: deleteConfigSchema,
+  toolsConfig: toolsConfigSchema,
 };
 
 const validate = (schema, payload) => {

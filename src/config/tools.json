@@ -403,6 +403,87 @@
           "website": "https://infozip.sourceforge.net/"
         }
       ]
+    },
+    {
+      "id": "modern-cli",
+      "name": "Modern CLI",
+      "icon": "terminal",
+      "description": "Modern replacements for classic unix tools",
+      "tools": [
+        {
+          "id": "ripgrep",
+          "name": "ripgrep (rg)",
+          "description": "Line-oriented search tool that recursively searches the current directory",
+          "package": "ripgrep",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "5MB",
+          "postInstall": "",
+          "checkCommand": "rg --version",
+          "website": "https://github.com/BurntSushi/ripgrep"
+        },
+        {
+          "id": "bat",
+          "name": "bat",
+          "description": "A cat(1) clone with wings (syntax highlighting)",
+          "package": "bat",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "15MB",
+          "postInstall": "",
+          "checkCommand": "batcat --version",
+          "website": "https://github.com/sharkdp/bat"
+        },
+        {
+          "id": "fzf",
+          "name": "fzf",
+          "description": "General-purpose command-line fuzzy finder",
+          "package": "fzf",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "2MB",
+          "postInstall": "",
+          "checkCommand": "fzf --version",
+          "website": "https://github.com/junegunn/fzf"
+        }
+      ]
+    },
+    {
+      "id": "cloud-devops",
+      "name": "Cloud & DevOps",
+      "icon": "cloud",
+      "description": "Tools for cloud computing and automation",
+      "tools": [
+        {
+          "id": "awscli",
+          "name": "AWS CLI",
+          "description": "Universal Command Line Interface for Amazon Web Services",
+          "package": "awscli",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "100MB",
+          "postInstall": "",
+          "checkCommand": "aws --version",
+          "website": "https://aws.amazon.com/cli/"
+        },
+        {
+          "id": "ansible",
+          "name": "Ansible",
+          "description": "Radically simple IT automation",
+          "package": "ansible",
+          "version": "latest",
+          "dependencies": [],
+          "conflicts": [],
+          "size": "150MB",
+          "postInstall": "",
+          "checkCommand": "ansible --version",
+          "website": "https://www.ansible.com/"
+        }
+      ]
     }
   ]
 }

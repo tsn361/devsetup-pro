@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const axios = require('axios');
 
 const PackageManager = require('./lib/package-manager');
 const PrivilegeManager = require('./lib/privilege-manager');
@@ -12,6 +13,8 @@ const { schemas, validate } = require('../shared/validation');
 
 const app = express();
 let server;
+
+const REMOTE_TOOLS_URL = 'https://raw.githubusercontent.com/tsn361/devsetup-pro/main/src/config/tools.json';
 
 const badRequest = (res, error) => res.status(400).json({ success: false, error });
 
@@ -31,13 +34,47 @@ app.use(express.json());
 // Load tools configuration
 let toolsConfig;
 const loadToolsConfig = async () => {
+  // 1. Try to fetch from GitHub
+  try {
+    console.log(`Fetching tools config from: ${REMOTE_TOOLS_URL}`);
+    const response = await axios.get(REMOTE_TOOLS_URL, { 
+      timeout: 5000, // 5 second timeout
+      responseType: 'json'
+    });
+    
+    if (response.data) {
+      // Validate the remote config structure
+      const validation = validate(schemas.toolsConfig, response.data);
+      if (validation.ok) {
+        toolsConfig = validation.data;
+        console.log('✅ Tools configuration loaded from GitHub');
+        return;
+      } else {
+        console.warn('⚠️ Remote tools config failed validation:', validation.error);
+      }
+    }
+  } catch (error) {
+    console.warn(`⚠️ Failed to fetch remote tools config: ${error.message}`);
+    console.log('Falling back to local configuration...');
+  }
+
+  // 2. Fallback to local file
   try {
     const configPath = path.join(__dirname, '../config/tools.json');
     const data = await fs.readFile(configPath, 'utf8');
-    toolsConfig = JSON.parse(data);
-    console.log('Tools configuration loaded successfully');
+    const parsedData = JSON.parse(data);
+    
+    // Validate local config too, just to be safe
+    const validation = validate(schemas.toolsConfig, parsedData);
+    if (validation.ok) {
+      toolsConfig = validation.data;
+      console.log('✅ Tools configuration loaded from local file');
+    } else {
+      console.error('❌ Local tools config failed validation:', validation.error);
+      throw new Error('Invalid local tools configuration');
+    }
   } catch (error) {
-    console.error('Failed to load tools.json:', error);
+    console.error('❌ Failed to load tools.json locally:', error);
     throw error;
   }
 };
