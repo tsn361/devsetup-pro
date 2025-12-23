@@ -8,13 +8,21 @@ const PrivilegeManager = require('./lib/privilege-manager');
 const DependencyResolver = require('./lib/dependency-resolver');
 const ProfileManager = require('./lib/profile-manager');
 const ConfigManager = require('./lib/config-manager');
+const { schemas, validate } = require('../shared/validation');
 
 const app = express();
 let server;
 
-// Basic validators (lightweight, non-exhaustive)
-const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
-const isStringArray = (arr) => Array.isArray(arr) && arr.length > 0 && arr.every((v) => isNonEmptyString(v));
+const badRequest = (res, error) => res.status(400).json({ success: false, error });
+
+const validateOrRespond = (res, schema, payload) => {
+  const result = validate(schema, payload);
+  if (!result.ok) {
+    badRequest(res, result.error);
+    return null;
+  }
+  return result.data;
+};
 
 // Middleware
 app.use(cors());
@@ -100,13 +108,17 @@ app.get('/api/tools', async (req, res) => {
  */
 app.get('/api/tools/:id', async (req, res) => {
   try {
+    const validated = validateOrRespond(res, schemas.toolId, { toolId: req.params.id });
+    if (!validated) return;
+    const { toolId } = validated;
+
     if (!toolsConfig) {
       await loadToolsConfig();
     }
 
     const tool = toolsConfig.categories
       .flatMap((cat) => cat.tools)
-      .find((t) => t.id === req.params.id);
+      .find((t) => t.id === toolId);
 
     if (!tool) {
       return res.status(404).json({
@@ -279,14 +291,9 @@ app.get('/api/system/check', async (req, res) => {
  */
 app.post('/api/verify-sudo', async (req, res) => {
   try {
-    const { password } = req.body;
-
-    if (!password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Password is required',
-      });
-    }
+    const validated = validateOrRespond(res, schemas.verifySudo, req.body);
+    if (!validated) return;
+    const { password } = validated;
 
     const isValid = await PrivilegeManager.verifyPassword(password);
 
@@ -308,13 +315,9 @@ app.post('/api/verify-sudo', async (req, res) => {
  */
 app.post('/api/install', async (req, res) => {
   try {
-    const { tools, password } = req.body;
-    if (!isStringArray(tools)) {
-      return res.status(400).json({ success: false, error: 'Tools array is required' });
-    }
-    if (!isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Password is required' });
-    }
+    const validated = validateOrRespond(res, schemas.install, req.body);
+    if (!validated) return;
+    const { tools, password } = validated;
 
     // Verify password first
     const isValidPassword = await PrivilegeManager.verifyPassword(password);
@@ -466,10 +469,9 @@ app.get('/api/profiles', async (req, res) => {
  */
 app.post('/api/profiles', async (req, res) => {
   try {
-    const profile = req.body;
-    if (!profile || !isNonEmptyString(profile.name) || !isStringArray(profile.tools || [])) {
-      return res.status(400).json({ success: false, error: 'Profile name and tools are required' });
-    }
+    const validated = validateOrRespond(res, schemas.profile, req.body);
+    if (!validated) return;
+    const profile = validated;
 
     const savedProfile = await ProfileManager.save(profile);
 
@@ -491,10 +493,10 @@ app.post('/api/profiles', async (req, res) => {
  */
 app.delete('/api/profiles/:id', async (req, res) => {
   try {
-    if (!isNonEmptyString(req.params.id)) {
-      return res.status(400).json({ success: false, error: 'Profile id is required' });
-    }
-    await ProfileManager.delete(req.params.id);
+    const profileId = validateOrRespond(res, schemas.profileId, req.params.id);
+    if (!profileId) return;
+
+    await ProfileManager.delete(profileId);
 
     res.json({
       success: true,
@@ -514,10 +516,13 @@ app.delete('/api/profiles/:id', async (req, res) => {
  */
 app.delete('/api/tools/:id', async (req, res) => {
   try {
-    const { password } = req.body;
-    if (!isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Password is required' });
-    }
+    const validated = validateOrRespond(res, schemas.uninstall, {
+      toolId: req.params.id,
+      password: req.body?.password,
+    });
+    if (!validated) return;
+
+    const { toolId, password } = validated;
 
     // Verify password first
     const isValidPassword = await PrivilegeManager.verifyPassword(password);
@@ -535,7 +540,7 @@ app.delete('/api/tools/:id', async (req, res) => {
 
     // Find the tool
     const allTools = toolsConfig.categories.flatMap((cat) => cat.tools);
-    const tool = allTools.find((t) => t.id === req.params.id);
+    const tool = allTools.find((t) => t.id === toolId);
 
     if (!tool) {
       return res.status(404).json({
@@ -601,13 +606,17 @@ app.delete('/api/tools/:id', async (req, res) => {
  */
 app.get('/api/tools/:id/extras', async (req, res) => {
   try {
+    const validated = validateOrRespond(res, schemas.toolId, { toolId: req.params.id });
+    if (!validated) return;
+    const { toolId } = validated;
+
     if (!toolsConfig) {
       await loadToolsConfig();
     }
 
     const tool = toolsConfig.categories
       .flatMap((cat) => cat.tools)
-      .find((t) => t.id === req.params.id);
+      .find((t) => t.id === toolId);
 
     if (!tool) {
       return res.status(404).json({
@@ -671,13 +680,13 @@ app.get('/api/tools/:id/extras', async (req, res) => {
  */
 app.post('/api/tools/:id/manage-extras', async (req, res) => {
   try {
-    const { password, install = [], remove = [] } = req.body;
-    if (!isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Password required' });
-    }
-    if ((install && !Array.isArray(install)) || (remove && !Array.isArray(remove))) {
-      return res.status(400).json({ success: false, error: 'install/remove must be arrays' });
-    }
+    const validated = validateOrRespond(res, schemas.manageExtras, {
+      ...req.body,
+      toolId: req.params.id,
+    });
+    if (!validated) return;
+
+    const { password, install = [], remove = [] } = validated;
 
     // Verify password
     const isValidPassword = await PrivilegeManager.verifyPassword(password);
@@ -736,11 +745,15 @@ app.get('/health', (req, res) => {
  */
 app.get('/api/tools/:id/configs', async (req, res) => {
   try {
+    const validated = validateOrRespond(res, schemas.toolId, { toolId: req.params.id });
+    if (!validated) return;
+    const { toolId } = validated;
+
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
       .flatMap(cat => cat.tools)
-      .find(t => t.id === req.params.id);
+      .find(t => t.id === toolId);
 
     if (!tool || !tool.configManagement) {
       return res.status(404).json({ success: false, error: 'Config management not supported' });
@@ -758,17 +771,24 @@ app.get('/api/tools/:id/configs', async (req, res) => {
  */
 app.get('/api/tools/:id/configs/:name', async (req, res) => {
   try {
+    const validated = validateOrRespond(res, schemas.getConfigContent, {
+      toolId: req.params.id,
+      name: req.params.name,
+    });
+    if (!validated) return;
+    const { toolId, name } = validated;
+
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
       .flatMap(cat => cat.tools)
-      .find(t => t.id === req.params.id);
+      .find(t => t.id === toolId);
 
     if (!tool || !tool.configManagement) {
       return res.status(404).json({ success: false, error: 'Config management not supported' });
     }
 
-    const content = await ConfigManager.getConfigContent(tool.configManagement, req.params.name);
+    const content = await ConfigManager.getConfigContent(tool.configManagement, name);
     res.json({ success: true, content });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -780,15 +800,19 @@ app.get('/api/tools/:id/configs/:name', async (req, res) => {
  */
 app.post('/api/tools/:id/configs', async (req, res) => {
   try {
-    const { name, content, password } = req.body;
-    if (!isNonEmptyString(name) || !isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Name and password are required' });
-    }
+    const validated = validateOrRespond(res, schemas.saveConfig, {
+      ...req.body,
+      toolId: req.params.id,
+    });
+    if (!validated) return;
+
+    const { toolId, name, content, password } = validated;
+
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
       .flatMap(cat => cat.tools)
-      .find(t => t.id === req.params.id);
+      .find(t => t.id === toolId);
 
     if (!tool || !tool.configManagement) {
       return res.status(404).json({ success: false, error: 'Config management not supported' });
@@ -806,21 +830,26 @@ app.post('/api/tools/:id/configs', async (req, res) => {
  */
 app.post('/api/tools/:id/configs/:name/toggle', async (req, res) => {
   try {
-    const { enable, password } = req.body;
-    if (!isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Password is required' });
-    }
+    const validated = validateOrRespond(res, schemas.toggleConfig, {
+      ...req.body,
+      toolId: req.params.id,
+      name: req.params.name,
+    });
+    if (!validated) return;
+
+    const { toolId, name, enable, password } = validated;
+
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
       .flatMap(cat => cat.tools)
-      .find(t => t.id === req.params.id);
+      .find(t => t.id === toolId);
 
     if (!tool || !tool.configManagement) {
       return res.status(404).json({ success: false, error: 'Config management not supported' });
     }
 
-    await ConfigManager.toggleConfig(tool.configManagement, req.params.name, enable, password);
+    await ConfigManager.toggleConfig(tool.configManagement, name, enable, password);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -832,21 +861,26 @@ app.post('/api/tools/:id/configs/:name/toggle', async (req, res) => {
  */
 app.delete('/api/tools/:id/configs/:name', async (req, res) => {
   try {
-    const { password } = req.body;
-    if (!isNonEmptyString(password)) {
-      return res.status(400).json({ success: false, error: 'Password is required' });
-    }
+    const validated = validateOrRespond(res, schemas.deleteConfig, {
+      ...req.body,
+      toolId: req.params.id,
+      name: req.params.name,
+    });
+    if (!validated) return;
+
+    const { toolId, name, password } = validated;
+
     if (!toolsConfig) await loadToolsConfig();
     
     const tool = toolsConfig.categories
       .flatMap(cat => cat.tools)
-      .find(t => t.id === req.params.id);
+      .find(t => t.id === toolId);
 
     if (!tool || !tool.configManagement) {
       return res.status(404).json({ success: false, error: 'Config management not supported' });
     }
 
-    await ConfigManager.deleteConfig(tool.configManagement, req.params.name, password);
+    await ConfigManager.deleteConfig(tool.configManagement, name, password);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

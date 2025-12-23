@@ -4,6 +4,17 @@
   height: 80vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.dialog-header {
+  padding-right: 48px; /* breathing room for the close icon */
+}
+
+.config-dialog .close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
 }
 
 .config-list-view {
