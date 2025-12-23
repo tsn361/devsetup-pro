@@ -1,0 +1,30 @@
+# Normalize line endings
+* text=auto
+
+# Source files: keep LF
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Windows scripts: keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.zip binary
+*.7z binary
+*.pdf binary
+*.exe binary
+*.dll binary
+*.AppImage binary
+*.deb binary
+*.snap binary
