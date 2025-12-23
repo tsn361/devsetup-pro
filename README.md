@@ -11,6 +11,36 @@
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
+## Download
+
+Get the latest installers from GitHub Releases:
+
+- Releases page: https://github.com/tsn361/devsetup-pro/releases
+
+### Install (Ubuntu)
+
+**Option A: AppImage (recommended)**
+
+1. Download `DevSetup-Pro-*.AppImage` from Releases
+2. Run:
+```bash
+chmod +x DevSetup-Pro-*.AppImage
+./DevSetup-Pro-*.AppImage
+```
+
+**Option B: .deb package**
+
+1. Download `devsetup-pro_*.deb` from Releases
+2. Install:
+```bash
+sudo dpkg -i devsetup-pro_*.deb
+sudo apt-get -f install
+```
+
+### Install (Windows)
+
+Use **WSL2 + Ubuntu** and run DevSetup Pro inside Ubuntu.
+
 ---
 
 ## 💖 Support This Project
