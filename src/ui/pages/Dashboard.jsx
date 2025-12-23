@@ -282,6 +282,10 @@ function Dashboard() {
       <div className="dashboard-header">
         <div className="header-info">
           <h1>Select Tools to Install</h1>
+          <div className="platform-badge">
+            <span className="badge-ubuntu">Ubuntu Supported</span>
+            <span className="badge-macos">MacOS Coming Soon</span>
+          </div>
           <p>Choose from {categories.reduce((sum, cat) => sum + cat.tools.length, 0)} available developer tools</p>
         </div>
 

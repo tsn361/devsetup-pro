@@ -3,8 +3,11 @@
 [![License: BSL-1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
 [![Platform: Ubuntu](https://img.shields.io/badge/Platform-Ubuntu%2020.04+-orange)](https://ubuntu.com/)
+[![Platform: MacOS](https://img.shields.io/badge/Platform-MacOS-lightgrey)](https://apple.com)
 
 > A modern, user-friendly GUI tool for Ubuntu developers to install and manage development tools without command-line expertise.
+>
+> **🍎 MacOS Support Coming Soon!**
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
