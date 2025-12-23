@@ -7,9 +7,9 @@
   "author": "DevSetup Team <info@devsetup.pro>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_GITHUB_USERNAME/devsetup-pro-public.git"
+    "url": "https://github.com/tsn361/devsetup-pro.git"
   },
-  "license": "MIT",
+  "license": "BSL-1.1",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
