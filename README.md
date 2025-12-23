@@ -11,9 +11,9 @@
 
 **GitHub:** [github.com/tsn361/devsetup-pro](https://github.com/tsn361/devsetup-pro)
 
-**Support:** See SUPPORT.md
+**Support:** See [SUPPORT.md](SUPPORT.md)
 
-**Security:** See SECURITY.md
+**Security:** See [SECURITY.md](SECURITY.md)
 
 ## Download
 
