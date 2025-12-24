@@ -47,15 +47,7 @@ Use **WSL2 + Ubuntu** and run DevSetup Pro inside Ubuntu.
 
 ---
 
-## 💖 Support This Project
 
-If you find DevSetup Pro helpful, consider supporting its development:
-
-<a href="https://www.buymeacoffee.com/devsetuppro" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-Your support helps maintain and improve this tool for the community! ☕
-
----
 
 ## 🔒 Security & Trust
 
