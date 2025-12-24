@@ -112,10 +112,8 @@ Ubuntu developers face challenges:
 ```
 devsetup-pro/
 ├── docs/                          # Documentation
-│   ├── ARCHITECTURE.md            # Technical architecture
 │   ├── FEATURES.md                # Detailed features list
 │   ├── ROADMAP.md                 # Development roadmap
-│   ├── BUSINESS_PLAN.md           # Market analysis
 │   ├── GETTING_STARTED.md         # Developer guide
 │   └── INDEX.md                   # Documentation index
 ├── src/

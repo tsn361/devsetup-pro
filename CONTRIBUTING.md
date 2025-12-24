@@ -15,7 +15,7 @@ By contributing to DevSetup Pro, you agree that:
 
 ### 1. Fork and Clone
 ```bash
-git clone https://github.com/your-username/devsetup-pro.git
+git clone https://github.com/tsn361/devsetup-pro.git
 cd devsetup-pro
 ```
 
