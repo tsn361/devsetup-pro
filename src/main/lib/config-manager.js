@@ -15,7 +15,8 @@ class ConfigManager {
 
   static async executeSudoCommand(command, password) {
     try {
-      const sudoCommand = `echo '${password}' | sudo -S ${command}`;
+      const escapedPassword = password.replace(/'/g, "'\\''");
+      const sudoCommand = `echo '${escapedPassword}' | sudo -S ${command}`;
       const wrappedCommand = this.wrapCommand(sudoCommand);
       const { stdout, stderr } = await execAsync(wrappedCommand);
       return { stdout, stderr };
@@ -73,7 +74,8 @@ class ConfigManager {
       // Strategy: Write to a local temp file in Windows, then copy to WSL /tmp, then move to destination
       // Or use base64 to transfer content
       const base64Content = Buffer.from(content).toString('base64');
-      const command = `echo "${base64Content}" | base64 -d > ${tempFile} && mv ${tempFile} ${filePath}`;
+      // Wrap in bash -c to ensure the whole pipeline runs under sudo
+      const command = `bash -c 'echo "${base64Content}" | base64 -d > ${tempFile} && mv ${tempFile} ${filePath}'`;
       
       await this.executeSudoCommand(command, password);
       return { success: true };
@@ -90,13 +92,13 @@ class ConfigManager {
       let command;
       if (configInfo.type === 'apache') {
         const action = enable ? 'a2ensite' : 'a2dissite';
-        command = `${action} ${name}`;
+        command = `${action} "${name}"`;
       } else {
         // Nginx or generic
         if (enable) {
-          command = `ln -sf ${availablePath} ${enabledPath}`;
+          command = `ln -sf "${availablePath}" "${enabledPath}"`;
         } else {
-          command = `rm -f ${enabledPath}`;
+          command = `rm -f "${enabledPath}"`;
         }
       }
 
@@ -117,7 +119,7 @@ class ConfigManager {
       await this.toggleConfig(configInfo, name, false, password);
       
       const filePath = path.join(configInfo.availablePath, name).replace(/\\/g, '/');
-      const command = `rm -f ${filePath}`;
+      const command = `rm -f "${filePath}"`;
       await this.executeSudoCommand(command, password);
       
       return { success: true };

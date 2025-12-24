@@ -17,6 +17,10 @@ const allowedInvoke = [
   'save-config',
   'toggle-config',
   'delete-config',
+  'get-service-status',
+  'start-service',
+  'stop-service',
+  'restart-service',
 ];
 
 contextBridge.exposeInMainWorld('electronAPI', {

@@ -64,7 +64,8 @@
           "size": "150MB",
           "postInstall": "",
           "checkCommand": "mysql --version",
-          "website": "https://www.mysql.com/"
+          "website": "https://www.mysql.com/",
+          "serviceName": "mysql"
         },
         {
           "id": "postgresql",
@@ -77,7 +78,8 @@
           "size": "80MB",
           "postInstall": "sudo systemctl enable postgresql",
           "checkCommand": "psql --version",
-          "website": "https://www.postgresql.org/"
+          "website": "https://www.postgresql.org/",
+          "serviceName": "postgresql"
         },
         {
           "id": "mongodb",
@@ -90,7 +92,8 @@
           "size": "200MB",
           "postInstall": "sudo systemctl enable mongodb",
           "checkCommand": "mongod --version",
-          "website": "https://www.mongodb.com/"
+          "website": "https://www.mongodb.com/",
+          "serviceName": "mongodb"
         },
         {
           "id": "redis",
@@ -103,7 +106,8 @@
           "size": "10MB",
           "postInstall": "sudo systemctl enable redis-server",
           "checkCommand": "redis-server --version",
-          "website": "https://redis.io/"
+          "website": "https://redis.io/",
+          "serviceName": "redis-server"
         }
       ]
     },

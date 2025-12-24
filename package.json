@@ -14,7 +14,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "electron": "electron .",
-    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && set OPEN_DEVTOOLS=true && set ELECTRON_ENABLE_LOGGING=true && electron .\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "eject": "react-scripts eject",
