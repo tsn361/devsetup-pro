@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import '../styles/PasswordDialog.css';
 
 function PasswordDialog({ isOpen, onSubmit, onCancel }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset state when dialog opens
+      setPassword('');
+      setError('');
+      setShowPassword(false);
+      // Focus input after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -26,8 +43,8 @@ function PasswordDialog({ isOpen, onSubmit, onCancel }) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="dialog-overlay">
+  return createPortal(
+    <div className="password-dialog-overlay">
       <div className="dialog-content">
         <h2>Enter Sudo Password</h2>
         <p className="dialog-description">
@@ -38,12 +55,12 @@ function PasswordDialog({ isOpen, onSubmit, onCancel }) {
         <form onSubmit={handleSubmit}>
           <div className="password-input-group">
             <input
+              ref={inputRef}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="password-input"
-              autoFocus
             />
             <button
               type="button"
@@ -70,7 +87,8 @@ function PasswordDialog({ isOpen, onSubmit, onCancel }) {
           🔒 Your password is encrypted and only used for this session
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

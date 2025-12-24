@@ -202,6 +202,27 @@ class IPCService {
     return await ipcRenderer.invoke('delete-config', { toolId, name, password });
   }
 
+  // Service Management
+  static async getServiceStatus(serviceName) {
+    if (!ipcRenderer) return { success: false, status: 'unknown' };
+    return await ipcRenderer.invoke('get-service-status', serviceName);
+  }
+
+  static async startService(serviceName, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('start-service', { serviceName, password });
+  }
+
+  static async stopService(serviceName, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('stop-service', { serviceName, password });
+  }
+
+  static async restartService(serviceName, password) {
+    if (!ipcRenderer) return { success: false };
+    return await ipcRenderer.invoke('restart-service', { serviceName, password });
+  }
+
   /**
    * Listen for installation updates
    */

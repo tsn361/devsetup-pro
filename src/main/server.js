@@ -9,6 +9,7 @@ const PrivilegeManager = require('./lib/privilege-manager');
 const DependencyResolver = require('./lib/dependency-resolver');
 const ProfileManager = require('./lib/profile-manager');
 const ConfigManager = require('./lib/config-manager');
+const ServiceManager = require('./lib/service-manager');
 const { schemas, validate } = require('../shared/validation');
 
 const app = express();
@@ -34,7 +35,26 @@ app.use(express.json());
 // Load tools configuration
 let toolsConfig;
 const loadToolsConfig = async () => {
-  // 1. Try to fetch from GitHub
+  // 1. Try local file first (Preferred for development/customization)
+  try {
+    const configPath = path.join(__dirname, '../config/tools.json');
+    const data = await fs.readFile(configPath, 'utf8');
+    const parsedData = JSON.parse(data);
+    
+    // Validate local config
+    const validation = validate(schemas.toolsConfig, parsedData);
+    if (validation.ok) {
+      toolsConfig = validation.data;
+      console.log('✅ Tools configuration loaded from local file');
+      return;
+    } else {
+      console.warn('⚠️ Local tools config failed validation:', validation.error);
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to load tools.json locally:', error.message);
+  }
+
+  // 2. Fallback to GitHub
   try {
     console.log(`Fetching tools config from: ${REMOTE_TOOLS_URL}`);
     const response = await axios.get(REMOTE_TOOLS_URL, { 
@@ -50,32 +70,15 @@ const loadToolsConfig = async () => {
         console.log('✅ Tools configuration loaded from GitHub');
         return;
       } else {
-        console.warn('⚠️ Remote tools config failed validation:', validation.error);
+        console.error('❌ Remote tools config failed validation:', validation.error);
       }
     }
   } catch (error) {
-    console.warn(`⚠️ Failed to fetch remote tools config: ${error.message}`);
-    console.log('Falling back to local configuration...');
+    console.error(`❌ Failed to fetch remote tools config: ${error.message}`);
   }
 
-  // 2. Fallback to local file
-  try {
-    const configPath = path.join(__dirname, '../config/tools.json');
-    const data = await fs.readFile(configPath, 'utf8');
-    const parsedData = JSON.parse(data);
-    
-    // Validate local config too, just to be safe
-    const validation = validate(schemas.toolsConfig, parsedData);
-    if (validation.ok) {
-      toolsConfig = validation.data;
-      console.log('✅ Tools configuration loaded from local file');
-    } else {
-      console.error('❌ Local tools config failed validation:', validation.error);
-      throw new Error('Invalid local tools configuration');
-    }
-  } catch (error) {
-    console.error('❌ Failed to load tools.json locally:', error);
-    throw error;
+  if (!toolsConfig) {
+    throw new Error('Failed to load tools configuration from any source');
   }
 };
 
@@ -951,6 +954,88 @@ app.delete('/api/tools/:id/configs/:name', async (req, res) => {
     }
 
     await ConfigManager.deleteConfig(tool.configManagement, name, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================================================
+// Service Management Routes
+// ============================================================================
+
+/**
+ * GET /api/services/:name/status - Get service status
+ */
+app.get('/api/services/:name/status', async (req, res) => {
+  try {
+    const { name } = req.params;
+    // Basic validation for service name to prevent injection
+    if (!/^[a-zA-Z0-9\-\._]+$/.test(name)) {
+      return res.status(400).json({ success: false, error: 'Invalid service name' });
+    }
+    
+    const status = await ServiceManager.getServiceStatus(name);
+    res.json({ success: true, status });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/services/:name/start - Start service
+ */
+app.post('/api/services/:name/start', async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { password } = req.body;
+    
+    if (!password) return res.status(400).json({ success: false, error: 'Password required' });
+    if (!/^[a-zA-Z0-9\-\._]+$/.test(name)) {
+      return res.status(400).json({ success: false, error: 'Invalid service name' });
+    }
+    
+    await ServiceManager.startService(name, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/services/:name/stop - Stop service
+ */
+app.post('/api/services/:name/stop', async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { password } = req.body;
+    
+    if (!password) return res.status(400).json({ success: false, error: 'Password required' });
+    if (!/^[a-zA-Z0-9\-\._]+$/.test(name)) {
+      return res.status(400).json({ success: false, error: 'Invalid service name' });
+    }
+    
+    await ServiceManager.stopService(name, password);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/services/:name/restart - Restart service
+ */
+app.post('/api/services/:name/restart', async (req, res) => {
+  try {
+    const { name } = req.params;
+    const { password } = req.body;
+    
+    if (!password) return res.status(400).json({ success: false, error: 'Password required' });
+    if (!/^[a-zA-Z0-9\-\._]+$/.test(name)) {
+      return res.status(400).json({ success: false, error: 'Invalid service name' });
+    }
+    
+    await ServiceManager.restartService(name, password);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ModuleDialog from './ModuleDialog';
 import ConfigDialog from './ConfigDialog';
+import ServiceControl from './ServiceControl';
 import '../styles/ToolCard.css';
 
 function ToolCard({ tool, selected, onToggle, disabled, onUninstall }) {
@@ -49,6 +50,12 @@ function ToolCard({ tool, selected, onToggle, disabled, onUninstall }) {
               />
             </div>
           ) : (
+            <span className="installed-badge">✓ Installed</span>
+          )}
+          
+          <h3 className="tool-name">{tool.name}</h3>
+          
+          {tool.installed && (
             <div className="header-buttons">
               {tool.configManagement && (
                 <button
@@ -79,8 +86,6 @@ function ToolCard({ tool, selected, onToggle, disabled, onUninstall }) {
               </button>
             </div>
           )}
-          <h3 className="tool-name">{tool.name}</h3>
-          {tool.installed && <span className="installed-badge">✓ Installed</span>}
         </div>
         
         <p className="tool-description">{tool.description}</p>
@@ -112,6 +117,10 @@ function ToolCard({ tool, selected, onToggle, disabled, onUninstall }) {
               </small>
             </div>
           </div>
+        )}
+
+        {tool.installed && (tool.serviceName || (tool.configManagement && tool.configManagement.serviceName)) && (
+          <ServiceControl serviceName={tool.serviceName || tool.configManagement.serviceName} />
         )}
 
         {tool.website && (

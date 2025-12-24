@@ -1,0 +1,96 @@
+.service-control {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.service-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.service-label {
+  color: #64748b;
+}
+
+.service-status {
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.service-status.active {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.service-status.inactive, .service-status.dead {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.service-status.unknown {
+  background-color: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.service-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.service-btn {
+  flex: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.service-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.service-btn.start {
+  background-color: #10b981;
+  color: white;
+}
+
+.service-btn.start:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.service-btn.stop {
+  background-color: #ef4444;
+  color: white;
+}
+
+.service-btn.stop:hover:not(:disabled) {
+  background-color: #dc2626;
+}
+
+.service-btn.restart {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.service-btn.restart:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.service-error {
+  margin-top: 8px;
+  color: #ef4444;
+  font-size: 0.8rem;
+}

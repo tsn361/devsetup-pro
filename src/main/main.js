@@ -3,9 +3,7 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const isDev = !app.isPackaged;
 
-const shouldOpenDevTools =
-  isDev &&
-  ['1', 'true', 'yes'].includes(String(process.env.OPEN_DEVTOOLS || '').toLowerCase());
+const shouldOpenDevTools = isDev;
 
 let mainWindow;
 let expressServer;
@@ -469,6 +467,57 @@ ipcMain.handle('delete-config', async (event, { toolId, name, password }) => {
     const response = await axios.delete(`http://localhost:3001/api/tools/${toolId}/configs/${name}`, {
       data: { password }
     });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Service Management Handlers
+ipcMain.handle('get-service-status', async (event, serviceName) => {
+  try {
+    if (!isNonEmptyString(serviceName)) return { success: false, error: 'Invalid service name' };
+    const axios = require('axios');
+    const response = await axios.get(`http://localhost:3001/api/services/${serviceName}/status`);
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('start-service', async (event, { serviceName, password }) => {
+  try {
+    if (!isNonEmptyString(serviceName) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/services/${serviceName}/start`, { password });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('stop-service', async (event, { serviceName, password }) => {
+  try {
+    if (!isNonEmptyString(serviceName) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/services/${serviceName}/stop`, { password });
+    return response.data;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('restart-service', async (event, { serviceName, password }) => {
+  try {
+    if (!isNonEmptyString(serviceName) || !isNonEmptyString(password)) {
+      return { success: false, error: 'Invalid payload' };
+    }
+    const axios = require('axios');
+    const response = await axios.post(`http://localhost:3001/api/services/${serviceName}/restart`, { password });
     return response.data;
   } catch (error) {
     return { success: false, error: error.message };

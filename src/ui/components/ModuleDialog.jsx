@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import IPCService from '../services/ipc';
 import '../styles/ModuleDialog.css';
 
@@ -88,13 +89,14 @@ function ModuleDialog({ tool, onClose, onApply }) {
   };
 
   if (loading) {
-    return (
+    return createPortal(
       <div className="dialog-overlay">
         <div className="dialog-content loading">
           <div className="spinner"></div>
           <p>Loading modules...</p>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
@@ -102,7 +104,7 @@ function ModuleDialog({ tool, onClose, onApply }) {
     [...selectedExtras].some(id => !initialExtras.has(id)) ||
     [...initialExtras].some(id => !selectedExtras.has(id));
 
-  return (
+  return createPortal(
     <div className="dialog-overlay">
       <div className="dialog-content module-dialog">
         <div className="dialog-header">
@@ -163,7 +165,8 @@ function ModuleDialog({ tool, onClose, onApply }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
