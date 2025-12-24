@@ -7,16 +7,17 @@ extraMetadata:
 
 directories:
   output: dist
-  buildResources: build
+  buildResources: build-resources
 
 files:
   - src/**/*
   - build/**/*
+  - build-resources/**/*
   - package.json
   - node_modules/**/*
 
 linux:
-  icon: build/icon.png
+  icon: build-resources/icon.png
   target:
     - target: AppImage
       arch:
