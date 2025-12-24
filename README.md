@@ -95,13 +95,23 @@ Ubuntu developers face challenges:
 
 ### Installation & Run
 
-**Option 1: Download AppImage (Recommended)**
+**Option 1: Install .deb Package (Easiest)**
+1. Go to the [Releases](https://github.com/tsn361/devsetup-pro/releases) page.
+2. Download the latest `.deb` file (e.g., `devsetup-pro_0.1.0_amd64.deb`).
+3. Install it:
+   ```bash
+   sudo dpkg -i devsetup-pro_*.deb
+   sudo apt-get -f install
+   ```
+4. Run it from your application menu or type `devsetup-pro` in terminal.
+
+**Option 2: Download AppImage (Portable)**
 1. Go to the [Releases](https://github.com/tsn361/devsetup-pro/releases) page.
 2. Download the latest `.AppImage` file.
 3. Make it executable: `chmod +x DevSetup-Pro-*.AppImage`
 4. Run it: `./DevSetup-Pro-*.AppImage`
 
-**Option 2: Build from Source**
+**Option 3: Build from Source**
 ```bash
 git clone https://github.com/tsn361/devsetup-pro.git
 cd devsetup-pro
