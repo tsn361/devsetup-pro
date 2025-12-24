@@ -18,6 +18,7 @@ function Dashboard() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [toolToUninstall, setToolToUninstall] = useState(null);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showSystemDetails, setShowSystemDetails] = useState(false);
@@ -146,8 +147,8 @@ function Dashboard() {
       });
 
       if (response.success) {
-        setError(`✓ Profile "${profileData.name}" saved successfully!`);
-        setTimeout(() => setError(null), 3000);
+        setSuccessMessage(`✓ Profile "${profileData.name}" saved successfully!`);
+        setTimeout(() => setSuccessMessage(null), 3000);
       } else {
         setError('Failed to save profile: ' + (response.error || 'Unknown error'));
         setTimeout(() => setError(null), 5000);
@@ -209,7 +210,7 @@ function Dashboard() {
     );
   }
 
-  if (error) {
+  if (error && categories.length === 0) {
     return (
       <div className="dashboard error">
         <h2>Error</h2>
@@ -221,6 +222,32 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
+      {/* Success Banner */}
+      {successMessage && (
+        <div className="success-banner" style={{
+          backgroundColor: '#d4edda',
+          color: '#155724',
+          padding: '10px 20px',
+          marginBottom: '20px',
+          borderRadius: '4px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>{successMessage}</span>
+          <button 
+            onClick={() => setSuccessMessage(null)} 
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#155724',
+              fontSize: '20px',
+              cursor: 'pointer'
+            }}
+          >×</button>
+        </div>
+      )}
+
       {/* Error Banner */}
       {error && !loading && (
         <div className="error-banner">

@@ -2,6 +2,8 @@ appId: com.devsetup.pro
 productName: DevSetup Pro
 copyright: Copyright © 2025 DevSetup Team
 extends: null
+extraMetadata:
+  homepage: https://devsetup.pro
 
 directories:
   output: dist
@@ -9,7 +11,7 @@ directories:
 
 files:
   - src/**/*
-  - public/**/*
+  - build/**/*
   - package.json
   - node_modules/**/*
 

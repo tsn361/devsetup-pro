@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = !app.isPackaged;
 
 let mainWindow;
 let expressServer;
@@ -35,7 +35,7 @@ function createWindow() {
   // Load the app
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, '../build/index.html')}`;
+    : `file://${path.join(__dirname, '../../build/index.html')}`;
 
   mainWindow.loadURL(startUrl);
 
