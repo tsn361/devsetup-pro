@@ -68,8 +68,22 @@ function Installing() {
         setProgress(100);
         setLogs(prev => [...prev, '✓ All tools installed successfully!']);
       } else {
-        setStatus('Failed');
-        setLogs(prev => [...prev, `❌ Installation failed: ${response.error}`]);
+        // Handle partial failures or total failure
+        if (response.results) {
+          const failedCount = response.failed || response.results.filter(r => !r.success).length;
+          const installedCount = response.installed || response.results.filter(r => r.success).length;
+          
+          setStatus('Finished with Errors');
+          setLogs(prev => [...prev, `⚠️ Process finished. Installed: ${installedCount}, Failed: ${failedCount}`]);
+          
+          // List failed tools
+          response.results.filter(r => !r.success).forEach(r => {
+             setLogs(prev => [...prev, `❌ ${r.name} failed: ${r.message}`]);
+          });
+        } else {
+          setStatus('Failed');
+          setLogs(prev => [...prev, `❌ Installation failed: ${response.error || 'Unknown error'}`]);
+        }
       }
 
       setResults(response);
