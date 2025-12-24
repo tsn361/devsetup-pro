@@ -125,6 +125,19 @@ class IPCService {
   }
 
   /**
+   * Export a profile as shell script
+   */
+  static async exportProfile(profileId) {
+    try {
+      if (!ipcRenderer) return { success: false };
+      return await ipcRenderer.invoke('export-profile', profileId);
+    } catch (error) {
+      console.error('Error exporting profile:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Uninstall a tool
    */
   static async uninstallTool(toolId, password) {

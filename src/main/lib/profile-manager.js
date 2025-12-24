@@ -401,6 +401,63 @@ class ProfileManager {
       };
     }
   }
+
+  /**
+   * Generate a bash installation script for a profile
+   * @param {Object} profile - The profile object
+   * @param {Object} toolsConfig - The full tools configuration
+   * @returns {string} - The generated bash script
+   */
+  static generateInstallScript(profile, toolsConfig) {
+    const tools = [];
+    
+    // Flatten tools config to find packages by ID
+    const allTools = toolsConfig.categories.flatMap(cat => cat.tools);
+    
+    // Find packages for profile tools
+    for (const toolId of profile.tools) {
+      const tool = allTools.find(t => t.id === toolId);
+      if (tool) {
+        tools.push(tool);
+      }
+    }
+
+    const packageNames = tools.map(t => t.package).join(' ');
+    const toolNames = tools.map(t => t.name).join(', ');
+
+    return `#!/bin/bash
+# DevSetup Pro - Auto-generated Installation Script
+# Profile: ${profile.name}
+# Description: ${profile.description || 'No description'}
+# Generated on: ${new Date().toISOString()}
+
+set -e
+
+echo "=========================================="
+echo "  DevSetup Pro - Installer"
+echo "  Profile: ${profile.name}"
+echo "=========================================="
+
+# Check for sudo
+if [ "$EUID" -ne 0 ]; then 
+  echo "Please run as root (sudo)"
+  exit 1
+fi
+
+echo "Updating package lists..."
+apt-get update
+
+echo "Installing tools: ${toolNames}"
+echo "Packages: ${packageNames}"
+
+# Install packages
+DEBIAN_FRONTEND=noninteractive apt-get install -y ${packageNames}
+
+echo "=========================================="
+echo "  Installation Complete!"
+echo "=========================================="
+`;
+  }
 }
 
 module.exports = ProfileManager;

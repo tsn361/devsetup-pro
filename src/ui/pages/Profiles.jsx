@@ -84,6 +84,20 @@ function Profiles() {
     }
   };
 
+  const handleExportScript = async (profile) => {
+    try {
+      const response = await IPCService.exportProfile(profile.id);
+      if (response.success) {
+        alert('Script exported successfully!');
+      } else if (!response.cancelled) {
+        alert('Failed to export script: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Error exporting script:', err);
+      alert('Failed to export script');
+    }
+  };
+
   const handleImportProfile = () => {
     try {
       // Create file input
@@ -211,13 +225,21 @@ function Profiles() {
                   onClick={() => handleLoadProfile(profile)}
                   className="btn-primary btn-small"
                 >
-                  Load Profile
+                  Load
                 </button>
                 <button 
                   onClick={() => handleExportProfile(profile)}
                   className="btn-secondary btn-small"
+                  title="Export as JSON"
                 >
-                  Export
+                  JSON
+                </button>
+                <button 
+                  onClick={() => handleExportScript(profile)}
+                  className="btn-secondary btn-small"
+                  title="Export as Shell Script"
+                >
+                  Script
                 </button>
                 <button 
                   onClick={() => handleDeleteProfile(profile.id)}

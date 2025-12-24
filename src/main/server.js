@@ -549,6 +549,39 @@ app.delete('/api/profiles/:id', async (req, res) => {
 });
 
 /**
+ * GET /api/profiles/:id/export - Export profile as shell script
+ */
+app.get('/api/profiles/:id/export', async (req, res) => {
+  try {
+    const profileId = validateOrRespond(res, schemas.profileId, req.params.id);
+    if (!profileId) return;
+
+    if (!toolsConfig) await loadToolsConfig();
+
+    const profiles = await ProfileManager.getAll();
+    const profile = profiles.find(p => p.id === profileId);
+
+    if (!profile) {
+      return res.status(404).json({ success: false, error: 'Profile not found' });
+    }
+
+    const script = ProfileManager.generateInstallScript(profile, toolsConfig);
+
+    res.json({
+      success: true,
+      script,
+      filename: `install-${profile.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.sh`
+    });
+  } catch (error) {
+    console.error('Error exporting profile:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
  * DELETE /api/tools/:id - Uninstall a tool
  */
 app.delete('/api/tools/:id', async (req, res) => {

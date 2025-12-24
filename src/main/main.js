@@ -263,6 +263,51 @@ ipcMain.handle('delete-profile', async (event, profileId) => {
 });
 
 /**
+ * Export profile
+ */
+ipcMain.handle('export-profile', async (event, profileId) => {
+  try {
+    if (!isNonEmptyString(profileId)) {
+      return { success: false, error: 'Invalid profile id' };
+    }
+    const axios = require('axios');
+    const response = await axios.get(`http://localhost:3001/api/profiles/${profileId}/export`);
+    
+    if (response.data.success) {
+      // Show save dialog
+      const { dialog } = require('electron');
+      const { filePath } = await dialog.showSaveDialog(mainWindow, {
+        title: 'Save Installation Script',
+        defaultPath: response.data.filename,
+        filters: [{ name: 'Shell Script', extensions: ['sh'] }]
+      });
+
+      if (filePath) {
+        const fs = require('fs').promises;
+        await fs.writeFile(filePath, response.data.script);
+        // Make executable
+        try {
+            await fs.chmod(filePath, 0o755);
+        } catch (e) {
+            // Ignore chmod errors on Windows
+        }
+        return { success: true, filePath };
+      } else {
+        return { success: false, cancelled: true };
+      }
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to export profile:', error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+});
+
+/**
  * Uninstall tool
  */
 ipcMain.handle('uninstall-tool', async (event, { toolId, password }) => {
