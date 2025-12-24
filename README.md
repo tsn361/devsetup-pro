@@ -15,35 +15,42 @@
 
 **Security:** See [SECURITY.md](SECURITY.md)
 
-## Download
+## Installation & Quick Start
 
-Get the latest installers from GitHub Releases:
+### System Requirements
+- Ubuntu 20.04+ (or WSL2 on Windows)
+- That's it! No other dependencies required.
 
-- Releases page: https://github.com/tsn361/devsetup-pro/releases
+### Option 1: Install .deb Package (Recommended)
+1. Go to the [Releases](https://github.com/tsn361/devsetup-pro/releases) page.
+2. Download the latest `.deb` file.
+3. Install it:
+   *   **GUI:** Double-click the downloaded file and click "Install".
+   *   **Terminal:**
+       ```bash
+       sudo dpkg -i devsetup-pro_*.deb
+       sudo apt-get -f install
+       ```
+4. Run `devsetup-pro` from your terminal or application menu.
 
-### Install (Ubuntu)
+### Option 2: AppImage (Portable)
+1. Download the `.AppImage` file from Releases.
+2. Make it executable and run:
+   ```bash
+   chmod +x DevSetup-Pro-*.AppImage
+   ./DevSetup-Pro-*.AppImage
+   ```
 
-**Option A: AppImage (recommended)**
+### Option 3: Build from Source (Developers)
+*Requires Node.js 18+ and npm 9+*
 
-1. Download `DevSetup-Pro-*.AppImage` from Releases
-2. Run:
 ```bash
-chmod +x DevSetup-Pro-*.AppImage
-./DevSetup-Pro-*.AppImage
+git clone https://github.com/tsn361/devsetup-pro.git
+cd devsetup-pro
+npm install
+npm run dev
 ```
-
-**Option B: .deb package**
-
-1. Download `devsetup-pro_*.deb` from Releases
-2. Install:
-```bash
-sudo dpkg -i devsetup-pro_*.deb
-sudo apt-get -f install
-```
-
-### Install (Windows)
-
-Use **WSL2 + Ubuntu** and run DevSetup Pro inside Ubuntu.
+*(On Windows, run these commands inside a WSL2 terminal)*
 
 ---
 
@@ -86,54 +93,7 @@ Ubuntu developers face challenges:
 
 ---
 
-## Quick Start
 
-### Prerequisites
-- Ubuntu 20.04+ (or WSL2 on Windows)
-- Node.js 18+
-- npm 9+
-
-### Installation & Run
-
-**Option 1: Install .deb Package (Easiest)**
-1. Go to the [Releases](https://github.com/tsn361/devsetup-pro/releases) page.
-2. Download the latest `.deb` file (e.g., `devsetup-pro_0.1.0_amd64.deb`).
-3. Install it:
-   ```bash
-   sudo dpkg -i devsetup-pro_*.deb
-   sudo apt-get -f install
-   ```
-4. Run it from your application menu or type `devsetup-pro` in terminal.
-
-**Option 2: Download AppImage (Portable)**
-1. Go to the [Releases](https://github.com/tsn361/devsetup-pro/releases) page.
-2. Download the latest `.AppImage` file.
-3. Make it executable: `chmod +x DevSetup-Pro-*.AppImage`
-4. Run it: `./DevSetup-Pro-*.AppImage`
-
-**Option 3: Build from Source**
-```bash
-git clone https://github.com/tsn361/devsetup-pro.git
-cd devsetup-pro
-npm install
-npm run dev
-```
-
-**Option 2: On Windows (via WSL2)**
-```bash
-# First time setup
-wsl -d Ubuntu bash
-mkdir ~/projects
-cd ~/projects
-git clone https://github.com/tsn361/devsetup-pro.git
-cd devsetup-pro
-npm install
-
-# Daily start (or use start-devsetup.bat)
-npm run dev
-```
-
----
 
 ## Solution Overview
 **DevSetup Pro** provides:
