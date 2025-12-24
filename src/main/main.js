@@ -3,6 +3,10 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const isDev = !app.isPackaged;
 
+const shouldOpenDevTools =
+  isDev &&
+  ['1', 'true', 'yes'].includes(String(process.env.OPEN_DEVTOOLS || '').toLowerCase());
+
 let mainWindow;
 let expressServer;
 
@@ -47,8 +51,8 @@ function createWindow() {
     }
   });
 
-  // Open DevTools in development
-  if (isDev) {
+  // Keep DevTools closed by default. Opt-in with OPEN_DEVTOOLS=1
+  if (shouldOpenDevTools) {
     mainWindow.webContents.openDevTools();
   }
 
