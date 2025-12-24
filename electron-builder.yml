@@ -16,6 +16,7 @@ files:
   - node_modules/**/*
 
 linux:
+  icon: build/icon.png
   target:
     - target: AppImage
       arch:
@@ -57,5 +58,5 @@ snap:
 
 publish:
   provider: github
-  owner: your-username
+  owner: tsn361
   repo: devsetup-pro
