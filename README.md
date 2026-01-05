@@ -5,9 +5,6 @@
 [![Platform: Ubuntu](https://img.shields.io/badge/Platform-Ubuntu%2020.04+-orange)](https://ubuntu.com/)
 [![Platform: MacOS](https://img.shields.io/badge/Platform-MacOS-lightgrey)](https://apple.com)
 
-> ⚠️ **CRITICAL: If you're using v0.1.0, please upgrade to v0.2.0 immediately!**  
-> v0.1.0 has critical bugs that make password dialogs and config management non-functional.
-
 > A modern, user-friendly GUI tool for Ubuntu developers to install and manage development tools without command-line expertise.
 >
 > **🍎 MacOS Support Coming Soon!**
