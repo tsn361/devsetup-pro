@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "A modern GUI tool for installing developer tools on Ubuntu",
   "main": "src/main/main.js",
-  "homepage": "./",
+  "homepage": "https://devsetup.pro",
   "author": "DevSetup Team <info@devsetup.pro>",
   "repository": {
     "type": "git",
